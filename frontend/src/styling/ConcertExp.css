@@ -1,0 +1,12 @@
+.memory-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+  
+  .media-column,
+  .note-column {
+    flex: 1;
+    min-width: 300px;
+  }
+  

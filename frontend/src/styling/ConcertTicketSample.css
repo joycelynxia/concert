@@ -1,0 +1,56 @@
+.ticket-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* height: 100px;  */
+}
+
+.ticket {
+  width: 600px; /* Wider for horizontal layout */
+  height: 250px; /* Shorter for horizontal layout */
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  display: flex; /* Use flexbox for horizontal layout */
+}
+
+.ticket-content {
+  display: flex;
+  flex-direction: row; /* Horizontal layout */
+  width: 100%;
+  height: 100%;
+}
+
+.left-section {
+  padding: 20px;
+  flex: 3; /* Takes up more space */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.seat-info {
+  padding: 20px;
+  text-align: right;
+  flex: 1; /* Takes up less space */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.barcode-section {
+  flex: 1; /* Takes up less space */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0f0f0; /* Match the barcode background */
+  overflow: hidden; /* Ensure the barcode doesn't overflow */
+  height: 100%; /* Ensure the container takes full height */
+  width: 100%; /* Ensure the container takes full width */
+}
+
+.barcode {
+  width: 100%;
+  height: 100%; /* Ensure the SVG takes full height */
+}

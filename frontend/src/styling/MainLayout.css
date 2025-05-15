@@ -1,0 +1,10 @@
+.main-layout {
+    display: flex;
+    min-height: 100vh; /* Ensure the layout takes up the full viewport height */
+  }
+  
+  .main-content {
+    flex: 1; /* Take up the remaining space */
+    padding: 20px;
+    background-color: #f5f5f5; /* Light background for the main content */
+  }
