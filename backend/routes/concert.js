@@ -13,6 +13,7 @@ const upload = multer({
         cb(null, ['image', 'video'].includes(file.mimetype.split('/')[0]));
     }
 })
+
 router.post('/ticket', async(req, res) => {
     console.log('POST /ticket hit');
     console.log(req.body); // 👀 log incoming data
@@ -104,5 +105,54 @@ router.get('experience/:id', async (req, res) => {
     }
 });
 
+
+// PUT /api/concerts/:id/playlist
+router.put('/:id/playlist', async (req, res) => {
+    const { id } = req.params;
+    const { spotifyPlaylistId } = req.body;
+    console.log(`adding playlist to concert ${id}`)
+  
+
+    // ✅ Parse the playlist ID from a full Spotify URL or plain ID
+    const extractPlaylistId = (input) => {
+        try {
+        const url = new URL(input);
+        if (!url.pathname.startsWith('/playlist/')) return null;
+        return url.pathname.replace('/playlist/', '') + url.search;
+        } catch {
+        // Assume it's already a valid playlistId or partial ID
+        return input;
+        }
+    };
+
+    const parsedId = extractPlaylistId(spotifyPlaylistId);
+
+    if (!parsedId) {
+        return res.status(400).json({ error: 'Invalid Spotify playlist input' });
+    }
+
+    try {
+        const experience = await ConcertExperience.findOne({ concertTicket: id });  
+        if (!experience) return res.status(404).json({ error: 'Concert experience not found' });
+        experience.spotifyPlaylistId = parsedId;
+        await experience.save()
+        res.json(experience);
+    } catch (err) {
+        res.status(500).json({ error: 'Server error' });
+    }
+  });
+  
+  router.get('/:id/setlist', async (req, res) => {
+    const id = req.params.id
+    console.log('getting setlist for concert ticket', id)
+    try {
+        const experience = await ConcertExperience.findOne({ concertTicket: id });
+        console.log('found experience', experience)
+        if (!experience) return res.status(404).json({ message: 'Concert exp not found' });
+        res.json({spotifyPlaylistId: experience.spotifyPlaylistId});
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 module.exports = router;

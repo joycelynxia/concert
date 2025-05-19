@@ -4,6 +4,7 @@ export interface ConcertDetails {
     date: string;
     venue?: string;
     seatInfo?: string;
+    spotifyPlaylistId?: string;
     _id: string;
   }
 

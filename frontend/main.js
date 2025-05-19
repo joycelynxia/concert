@@ -1,19 +1,24 @@
-// frontend/main.ts
 import { app, BrowserWindow } from "electron";
 import path from "path";
 
-let mainWindow: BrowserWindow | null = null;
+let mainWindow = null;
 
 const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
-      nodeIntegration: true,
+      contextIsolation: true,
+      nodeIntegration: false,
+      // preload: path.join(__dirname, "preload.js"), // optional
     },
   });
 
-  mainWindow.loadURL("http://localhost:3000");  // React Dev Server
+  if (app.isPackaged) {
+    mainWindow.loadFile(path.join(__dirname, "../build/index.html"));
+  } else {
+    mainWindow.loadURL("http://127.0.0.1:3000");
+  }
 };
 
 app.whenReady().then(createWindow);

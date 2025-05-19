@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const concertRoutes = require('./routes/concert')
 const uploadRoutes = require('./routes/upload')
+const authRoutes = require('./routes/auth')
 require('dotenv').config();
 
 const app = express();
@@ -18,6 +19,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use('/api/concerts', concertRoutes)
 app.use('/api/upload', uploadRoutes)
+app.use('/api/auth', authRoutes)
 
 app.get('/api/test', (req, res) => {
     res.json({ message: 'Backend connected successfully!' });
@@ -27,6 +29,6 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB connection error:', err));
 
-app.listen(PORT, () => {
-    console.log(`server running on port ${PORT}`);
+app.listen(PORT, '127.0.0.1', () => {
+    console.log(`server running at http://127.0.0.1:${PORT}`);
 });

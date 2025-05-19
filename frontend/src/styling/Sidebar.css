@@ -35,3 +35,19 @@
   .sidebar-link:hover {
     background-color: #7f79e3; /* Slightly lighter background on hover */
   }
+
+  .sidebar-login button {
+    width: 100%;
+    padding: 8px 12px;
+    background-color: #1DB954; /* Spotify green */
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 4px;
+  }
+  
+  .sidebar-login button:hover {
+    background-color: #17a347;
+  }
+  

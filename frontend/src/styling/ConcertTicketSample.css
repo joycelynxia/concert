@@ -45,12 +45,22 @@
   justify-content: center;
   align-items: center;
   background-color: #f0f0f0; /* Match the barcode background */
-  overflow: hidden; /* Ensure the barcode doesn't overflow */
+  overflow: hidden; 
   height: 100%; /* Ensure the container takes full height */
   width: 100%; /* Ensure the container takes full width */
 }
 
 .barcode {
-  width: 100%;
-  height: 100%; /* Ensure the SVG takes full height */
+  height: 100%;
+  /* width: 100%; */
+}
+
+.barcode-wrapper {
+  transform: rotate(-90deg);
+  transform-origin: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 200px;
+  height: 200px;
 }

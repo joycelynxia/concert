@@ -107,7 +107,7 @@ router.get('/get/:experienceId', async (req, res) => {
     if (!experience) {
       return res.status(404).json({ error: 'Experience not found' });
     }
-    console.log(experience.memories)
+    // console.log(experience.memories)
     res.status(200).json(experience.memories);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch memories' });

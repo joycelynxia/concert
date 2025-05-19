@@ -1,22 +1,35 @@
-// App.tsx
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import TicketsPage from './pages/TicketsPage'; // Import the homepage component
-import CalendarPage from 'pages/CalendarPage';
-import MainLayout from 'components/MainLayout';
-import ConcertExpPage from 'pages/ConcertExpPage';
+import TicketsPage from './pages/TicketsPage';
+import CalendarPage from './pages/CalendarPage';
+import MainLayout from './components/MainLayout';
+import ConcertExpPage from './pages/ConcertExpPage';
+
+import { SpotifyLogin } from './components/Spotify/SpotifyLogin';
+import { SpotifyCallback } from './components/Spotify/SpotifyCallback';
+import { SpotifyPlayer } from './components/Spotify/SpotifyPlayer';
+
+import { SpotifyProvider, useSpotify } from './context/SpotifyContext';
+import { SpotifyPlayerWrapper } from 'components/Spotify/SpotifyPlayerWrapper';
+import { SpotifyCallbackWrapper } from 'components/Spotify/SpotifyCallbackWrapper';
 
 const App: React.FC = () => {
   return (
-    <Router>
-      <MainLayout>
-        <Routes>
-          <Route path="/" element={<TicketsPage />} />
-          <Route path="/calendar" element={<CalendarPage />} />
-          <Route path='/concert/:id' element={<ConcertExpPage />} />
-        </Routes>
-      </MainLayout>
-    </Router>
+    <SpotifyProvider>
+      <Router>
+        <MainLayout>
+          <Routes>
+            <Route path="/" element={<TicketsPage />} />
+            <Route path="/calendar" element={<CalendarPage />} />
+            <Route path="/concert/:id" element={<ConcertExpPage />} />
+
+            <Route path="/spotify/login" element={<SpotifyLogin />} />
+            <Route path="/spotify/callback" element={<SpotifyCallbackWrapper />} />
+            <Route path="/spotify/player" element={<SpotifyPlayerWrapper />} />
+          </Routes>
+        </MainLayout>
+      </Router>
+    </SpotifyProvider>
   );
 };
 

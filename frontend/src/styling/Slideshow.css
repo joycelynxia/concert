@@ -1,0 +1,29 @@
+.slideshow-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+  }
+  
+  .slideshow-btn {
+    background-color: #eee;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+  }
+  
+  .media-wrapper {
+    width: 100%;
+    max-width: 600px;
+    max-height: 500px;
+  }
+  
+  .slideshow-media {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 10px;
+  }
+  

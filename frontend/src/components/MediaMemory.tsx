@@ -8,15 +8,15 @@ interface MediaMemoryProps {
 }
 
 const MediaMemory: React.FC<MediaMemoryProps> = ({ memory, onDelete}) => {
-    const src = `http://localhost:4000${memory.content}`;
+    const src = `http://127.0.0.1:4000${memory.content}`;
 
     return (
         <div className='mb-4'>
             {memory.type === 'photo' ? (
-                <img src={`http://localhost:4000${memory.content}`} alt="Concert memory" width="200" />
+                <img src={`http://127.0.0.1:4000${memory.content}`} alt="Concert memory" width="200" />
             ) : (
                 <video controls width="300">
-                    <source src={`http://localhost:4000${memory.content}`} type={memory.mimeType || 'video/mp4'} />
+                    <source src={`http://127.0.0.1:4000${memory.content}`} type={memory.mimeType || 'video/mp4'} />
                     Your browser does not support the video tag.
                 </video>
             )}

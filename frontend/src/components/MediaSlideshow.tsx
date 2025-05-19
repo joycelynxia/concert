@@ -1,47 +1,47 @@
-// MediaSlideshow.tsx
-import Slider from 'react-slick';
+// SimpleSlideshow.tsx
+import { useState } from 'react';
 import { ConcertMemory } from 'types/types';
-
-interface MediaSlideshowProps {
+import '../styling/Slideshow.css'
+interface SlideshowProps {
   media: ConcertMemory[];
 }
 
-const MediaSlideshow: React.FC<MediaSlideshowProps> = ({ media }) => {
-  const settings = {
-    dots: true,
-    infinite: false,
-    speed: 0,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-  };
+const SimpleSlideshow: React.FC<SlideshowProps> = ({ media }) => {
+  const [current, setCurrent] = useState(0);
 
-  if (!media || media.length === 0) {
-    return <p>No media to show.</p>;
-  }
+  const mediaItems = media.filter(mem => mem.type === 'photo' || mem.type === 'video');
+  const total = mediaItems.length;
+
+  const goPrev = () => setCurrent((prev) => (prev === 0 ? total - 1 : prev - 1));
+  const goNext = () => setCurrent((prev) => (prev === total - 1 ? 0 : prev + 1));
+
+  if (total === 0) return <p>No media available.</p>;
+
+  const currentItem = mediaItems[current];
 
   return (
-    <Slider {...settings}>
-      {media.map((item, idx) => (
-        <div key={item._id || idx}>
-          {item.type === 'photo' && (
-            <img
-              src={`http://localhost:4000${item.content}`}
-              alt="concert memory"
-              style={{ width: '100%', maxHeight: '500px', objectFit: 'contain' }}
-              onError={(e) => console.error('Image failed to load:', item.content)}
-            />
-          )}
-          {item.type === 'video' && (
-            <video
-              controls
-              src={`http://localhost:4000${item.content}`}
-              style={{ width: '100%', maxHeight: '500px' }}
-            />
-          )}
-        </div>
-      ))}
-    </Slider>
+    <div className="slideshow-container">
+      <button onClick={goPrev} className="slideshow-btn">‹</button>
+      
+      <div className="media-wrapper">
+        {currentItem.type === 'photo' ? (
+          <img
+            src={`http://127.0.0.1:4000${currentItem.content}`}
+            alt="Concert"
+            className="slideshow-media"
+          />
+        ) : (
+          <video
+            src={`http://127.0.0.1:4000${currentItem.content}`}
+            controls
+            className="slideshow-media"
+          />
+        )}
+      </div>
+
+      <button onClick={goNext} className="slideshow-btn">›</button>
+    </div>
   );
 };
 
-export default MediaSlideshow;
+export default SimpleSlideshow;

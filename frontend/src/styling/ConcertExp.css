@@ -1,12 +1,117 @@
-.memory-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 24px;
-  }
-  
-  .media-column,
-  .note-column {
-    flex: 1;
-    min-width: 300px;
-  }
-  
+.exp-container {
+  padding: 1rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.button {
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  color: white;
+  background-color: #4f46e5;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border: none;
+}
+
+.button:hover {
+  background-color: #4338ca;
+}
+
+.cancel-button {
+  background-color: #4b5563;
+}
+
+.cancel-button:hover {
+  background-color: #374151;
+}
+
+.save-button {
+  background-color: #16a34a;
+}
+
+.save-button:hover {
+  background-color: #15803d;
+}
+
+.delete-button {
+  background-color: #dc2626;
+}
+
+.flex-row {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1rem;
+}
+
+.media-section, .note-section {
+  flex: 1;
+}
+
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.preview-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.preview-item img {
+  width: 150px;
+  object-fit: cover;
+  aspect-ratio: 4 / 3;
+  border-radius: 4px;
+}
+
+.media-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.media-item {
+  width: 150px;
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.media-item.selected {
+  border: 3px solid red;
+}
+
+.media-item img,
+.media-item video {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.note-display {
+  white-space: pre-wrap;
+  font-family: monospace;
+  padding: 0.5rem;
+  background-color: #f9fafb;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.save-button-wrapper {
+  margin-top: 1rem;
+}

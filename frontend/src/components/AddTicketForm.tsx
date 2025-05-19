@@ -27,7 +27,7 @@ const AddTicketForm: React.FC<AddTicketFormProps> = ({ onAddTicket, onCancel }) 
     e.preventDefault();
 
     try {
-        const response = await fetch('http://localhost:4000/api/concerts/ticket', {
+        const response = await fetch('http://127.0.0.1:4000/api/concerts/ticket', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -1,10 +1,12 @@
 import React from 'react';
 import {Link} from 'react-router-dom'
 import '../styling/Sidebar.css'
+import { SpotifyLogin } from './Spotify/SpotifyLogin';
+import { SpotifyLogoutButton } from './Spotify/SpotifyLogoutVButton';
 const Sidebar: React.FC = () => {
     return (
         <div className='sidebar'>
-            <h2 className='sidebar-title'>Concert Memories</h2>
+            <h2 className='sidebar-title'>ENCORE</h2>
             <nav>
                 <ul className='sidebar-nav'>
                     <li className='sidebar-link'>
@@ -16,6 +18,12 @@ const Sidebar: React.FC = () => {
                         <Link to="/calendar" className='sidebar-link'>
                         Calendar
                         </Link>
+                    </li>
+                    <li className='sidebar-login'>
+                        <SpotifyLogin/>
+                    </li>
+                    <li>
+                        <SpotifyLogoutButton/>
                     </li>
                 </ul>
             </nav>

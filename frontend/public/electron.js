@@ -14,7 +14,7 @@ function createWindow() {
   });
 
   // Point to the React app's development server or build folder
-  mainWindow.loadURL('http://localhost:3000');  // If using React dev server
+  mainWindow.loadURL('http://127.0.0.1:3000');  // If using React dev server
   // Or
   // mainWindow.loadFile(path.join(__dirname, 'build', 'index.html'));  // If using production build
 }
