@@ -147,12 +147,33 @@ router.put('/:id/playlist', async (req, res) => {
     console.log('getting setlist for concert ticket', id)
     try {
         const experience = await ConcertExperience.findOne({ concertTicket: id });
-        console.log('found experience', experience)
+        console.log('found experience', experience);
         if (!experience) return res.status(404).json({ message: 'Concert exp not found' });
         res.json({spotifyPlaylistId: experience.spotifyPlaylistId});
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
+
+router.delete('/ticket/:id', async (req, res) => {
+    const id = req.params.id;
+    console.log('deleting ticket', id)
+    try{
+        const experience = await ConcertExperience.findOne({concertTicket: id});
+        console.log('found experience:', experience);
+        if (!experience) return res.status(404).json({ message: 'Concert exp not found' });
+        
+        if (experience.memories && experience.memories.length > 0) {
+            await ConcertMemory.deleteMany({ _id: { $in: experience.memories } });
+        }
+        await ConcertExperience.findByIdAndDelete(experience._id);
+        await ConcertTicket.findByIdAndDelete(id)
+        res.status(200).json({ message: 'Ticket and related data deleted successfully' });
+
+    } catch (error) {
+        console.error('Error deleting ticket:', error);
+        res.status(500).json({ error: error.message });
+    }
+})
 
 module.exports = router;

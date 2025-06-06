@@ -2,6 +2,7 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
+    position: relative;
   }
   
   .page-title {
@@ -10,22 +11,39 @@
     margin-bottom: 1.5rem;
     text-align: center;
   }
+
+  .ticket-button-container {
+    position: absolute;
+    top: 40px;
+    right: 20px;
+    display: flex;
+    gap: 10px; /* space between buttons */
+  }
   
-  .add-button {
-    background-color: #4f46e5;
+  .ticket-button {
     color: white;
     padding: 0.6rem 1.2rem;
     border: none;
     border-radius: 6px;
     font-size: 1rem;
     cursor: pointer;
-    display: block;
-    margin: 0 auto 1.5rem;
     transition: background-color 0.2s ease-in-out;
   }
   
-  .add-button:hover {
-    background-color: #4338ca;
+  
+  
+  #add {
+    background-color: #4f46e5;
+  }
+  #add:hover {
+    background-color: #3224c7;
+  }
+
+  #delete {
+    background-color: #f66262;
+  }
+  #delete:hover {
+    background-color: #f52323;
   }
   
   .form-wrapper {
@@ -60,5 +78,148 @@
 .ticket {
     /* your existing styles */
     transition: transform 0.3s ease;
+  }
+  
+  .form-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;   /* Important for accurate width */
+    height: 100vh;  /* Important for accurate height */
+    background: rgba(74, 74, 74, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    overflow: hidden;
+  }
+  
+  
+  .form-container {
+    background: #ffffff;
+    position: relative;
+    padding: 2rem;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    animation: slideFadeIn 0.3s ease-in-out;
+  }
+  
+  @keyframes fadeInModal {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+/*   
+  .form-container {
+    background: #ffffff;
+    animation: fadeInModal 0.2s ease-out;
+    opacity: 0;
+    animation-fill-mode: forwards;
+  } */
+  
+  
+  .form-container h2 {
+    margin-top: 0;
+    font-size: 1.75rem;
+    text-align: center;
+    color: #333;
+  }
+  
+  .form-container label {
+    display: block;
+    margin-bottom: 1.2rem;
+    color: #444;
+    font-weight: 500;
+  }
+  
+  .form-container input {
+    width: 100%;
+    padding: 0.65rem;
+    margin-top: 0.4rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    transition: border-color 0.3s ease;
+  }
+  
+  .form-container input:focus {
+    border-color: #4a90e2;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+  }
+  
+  .form-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+  }
+  
+  .form-buttons button {
+    flex: 1;
+    margin: 0 0.5rem;
+    padding: 0.6rem 1rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    background-color: #4a90e2;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .form-buttons button:hover {
+    background-color: #357ab8;
+  }
+  
+  .close-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.2rem;
+    background: transparent;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  
+  .close-button:hover {
+    color: #000;
+  }
+  
+  .ticket-item.deletable {
+    cursor: pointer;
+    opacity: 0.7;
+    border: 2px solid transparent;
+    border-radius: 10px;
+  }
+  
+  .ticket-item.selected {
+    border-color: red;
+    background-color: #ffe5e5;
+  }
+  
+  .confirm-delete-container {
+    margin: 1rem 0;
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .confirm-delete-button {
+    background-color: #d9534f;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+  }
+  
+  .confirm-delete-button:hover {
+    background-color: #c9302c;
   }
   

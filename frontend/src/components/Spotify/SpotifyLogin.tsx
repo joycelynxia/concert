@@ -7,7 +7,7 @@ export function SpotifyLogin() {
 
     return (
         <button onClick={login}>
-            login with spotify
+            connect spotify
         </button>
     );
 }

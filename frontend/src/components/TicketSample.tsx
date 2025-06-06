@@ -16,7 +16,7 @@ const ConcertTicketSample: React.FC<ConcertDetails> = ({
 
   useEffect(() => {
     if (barcodeRef.current) {
-      JsBarcode(barcodeRef.current, '123456789012', {
+      JsBarcode(barcodeRef.current, _id, {
         format: 'CODE128',
         width: 2,
         height: 150,

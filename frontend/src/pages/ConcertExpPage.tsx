@@ -149,27 +149,7 @@ const ConcertExpPage: React.FC = () => {
       <h1 className="title">
         {concertDetails?.artist}: {concertDetails?.tour}
       </h1>
-      {tokens && (
-        concertDetails?.spotifyPlaylistId ? (
-          <SpotifyPlayer
-            accessToken={tokens.access_token}
-            playlistId={concertDetails.spotifyPlaylistId}
-          />
-        ) : (
-          <div className="spotify-id-entry">
-            <h3>Set Spotify Playlist for this Concert</h3>
-            <input
-              type="text"
-              placeholder="Paste Spotify Playlist URL or URI"
-              value={newPlaylistId}
-              onChange={(e) => setNewPlaylistId(e.target.value)}
-            />
-            <button onClick={handleAddPlaylist}>
-              Save Playlist
-            </button>
-          </div>
-        )
-      )}
+      
       {editMode ? (
         <>
           <button
@@ -283,6 +263,30 @@ const ConcertExpPage: React.FC = () => {
           </div>
         </>
       )}
+
+      {/* SETLIST PLAYER */}
+      {tokens && (
+        concertDetails?.spotifyPlaylistId ? (
+          <SpotifyPlayer
+            accessToken={tokens.access_token}
+            playlistId={concertDetails.spotifyPlaylistId}
+          />
+        ) : (
+          <div className="spotify-id-entry">
+            <h3>Set Spotify Playlist for this Concert</h3>
+            <input
+              type="text"
+              placeholder="Paste Spotify Playlist URL or URI"
+              value={newPlaylistId}
+              onChange={(e) => setNewPlaylistId(e.target.value)}
+            />
+            <button onClick={handleAddPlaylist}>
+              Save Playlist
+            </button>
+          </div>
+        )
+      )}
+      
     </div>
   );
 };

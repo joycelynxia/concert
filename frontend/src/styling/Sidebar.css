@@ -1,53 +1,77 @@
 .sidebar {
-    width: 150px; /* Fixed width for the sidebar */
-    height: 100vh; /* Full height of the viewport */
-    background-color: #9a95fa; /* Dark background color */
-    color: #f5f6f6; /* Light text color */
-    padding: 20px;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
-  }
-  
-  .sidebar-title {
-    font-size: 24px;
-    margin-bottom: 20px;
-    text-align: center;
-  }
-  
-  .sidebar-nav {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .sidebar-nav li {
-    margin: 15px 0;
-  }
-  
-  .sidebar-link {
-    color: #f5f6f6; /* Light text color */
-    text-decoration: none;
-    font-size: 18px;
-    display: block;
-    padding: 10px;
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
-  }
-  
-  .sidebar-link:hover {
-    background-color: #7f79e3; /* Slightly lighter background on hover */
-  }
+  width: 150px;
+  height: 100vh;
+  background-color: #9a95fa;
+  color: #f5f6f6;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
 
-  .sidebar-login button {
-    width: 100%;
-    padding: 8px 12px;
-    background-color: #1DB954; /* Spotify green */
-    border: none;
-    color: white;
-    cursor: pointer;
-    font-weight: bold;
-    border-radius: 4px;
-  }
-  
-  .sidebar-login button:hover {
-    background-color: #17a347;
-  }
-  
+.sidebar-title {
+  font-size: 24px;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  color: #f5f6f6;
+  text-decoration: none;
+  font-size: 18px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.sidebar-link:hover,
+.sidebar-link:focus {
+  background-color: #5f58c8;
+  outline: none;
+}
+
+.sidebar-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.sidebar-spotify {
+  display: flex;
+  justify-content: center;
+}
+
+.sidebar-spotify button {
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 4px;
+}
+
+#login button {
+  background-color: #1DB954;
+}
+
+#login button:hover {
+  background-color: #17a347;
+}
+
+#logout button {
+  background-color: #b91d1d;
+}
+
+#logout button:hover {
+  background-color: #a31a1a;
+}

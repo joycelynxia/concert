@@ -8,6 +8,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    show: true,
     webPreferences: {
       nodeIntegration: true,
     },
@@ -17,6 +18,8 @@ function createWindow() {
   mainWindow.loadURL('http://127.0.0.1:3000');  // If using React dev server
   // Or
   // mainWindow.loadFile(path.join(__dirname, 'build', 'index.html'));  // If using production build
+  win.webContents.openDevTools();
+
 }
 
 app.whenReady().then(() => {

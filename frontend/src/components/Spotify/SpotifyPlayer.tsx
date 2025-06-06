@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
+import '../../styling/SpotifyPlayer.css'
+import { ChevronUp, ChevronDown, Play, Pause, SkipForward } from 'lucide-react';
 
 interface SpotifyPlayerProps {
   accessToken: string;
@@ -10,23 +12,69 @@ declare global {
     onSpotifyWebPlaybackSDKReady: () => void;
     Spotify: any;
   }
+
+  namespace Spotify {
+    interface PlayerInit {
+      name: string;
+      getOAuthToken: (cb: (token: string) => void) => void;
+      volume?: number;
+    }
+
+    interface Player {
+      connect(): Promise<boolean>;
+      disconnect(): void;
+      addListener(event: string, callback: (args: any) => void): boolean;
+      removeListener(event: string): boolean;
+      pause(): Promise<void>;
+      resume(): Promise<void>;
+      nextTrack(): Promise<void>;
+      previousTrack(): Promise<void>;
+      seek(position_ms: number): Promise<void>;
+      getCurrentState(): Promise<PlayerState | null>;
+    }
+
+    interface PlayerState {
+      duration: number;
+      position: number;
+      paused: boolean;
+      track_window: {
+        current_track: Track;
+        previous_tracks: Track[];
+        next_tracks: Track[];
+      };
+    }
+
+    interface Track {
+      uri: string;
+      id: string;
+      name: string;
+      type: string;
+      artists: { name: string }[];
+      album: {
+        images: { url: string }[];
+      };
+    }
+
+    interface PlaybackInstance {
+      device_id: string;
+    }
+  }
 }
 
 export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ accessToken, playlistId }) => {
   const [deviceId, setDeviceId] = useState<string | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [tracks, setTracks] = useState<any[]>([]);
-  const [player, setPlayer] = useState<any>(null);
+  const [player, setPlayer] = useState<Spotify.Player | null>(null);
   const [currentTrack, setCurrentTrack] = useState<any>(null);
-  const [isPlaying, setIsPlaying] = useState<any>(null);
+  const [isPlaying, setIsPlaying] = useState<boolean | null>(null);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [showSetlist, setShowSetlist] = useState(true);
   const intervalRef = useRef<any>(null);
 
-  // Setup Spotify Web Playback SDK
   useEffect(() => {
     if (!accessToken) return;
-
 
     const setupPlayer = () => {
       if (!window.Spotify) {
@@ -36,7 +84,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ accessToken, playl
 
       const _player = new window.Spotify.Player({
         name: 'Concert Tracker Player',
-        getOAuthToken: (cb: (token: string) => void) => cb(accessToken),
+        getOAuthToken: (cb: (token: string) => void) => { cb(accessToken); },
         volume: 0.5,
       });
 
@@ -46,7 +94,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ accessToken, playl
         setIsReady(true);
       });
 
-      _player.addListener('player_state_changed', (state: any) => {
+      _player.addListener('player_state_changed', (state: Spotify.PlayerState) => {
         if (!state) return;
         const { current_track } = state.track_window;
         setCurrentTrack(current_track);
@@ -76,7 +124,6 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ accessToken, playl
     };
   }, [accessToken]);
 
-  // Fetch playlist tracks
   useEffect(() => {
     if (!accessToken || !playlistId) return;
 
@@ -107,20 +154,22 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ accessToken, playl
 
   useEffect(() => {
     if (!player) return;
-  
+
     intervalRef.current = setInterval(async () => {
       const state = await player.getCurrentState();
       if (state) {
         setProgress(state.position);
         setDuration(state.duration);
       }
-    }, 1000); // update every second
-  
+    }, 1000);
+
     return () => clearInterval(intervalRef.current);
   }, [player]);
-  
+
   const playTrack = async (trackUri: string) => {
     if (!deviceId) return;
+  
+    const trackUris = tracks.map(t => t.uri);
     try {
       await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
         method: 'PUT',
@@ -128,26 +177,30 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ accessToken, playl
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ uris: [trackUri] }),
+        body: JSON.stringify({
+          uris: trackUris,
+          offset: { uri: trackUri },
+        }),
       });
     } catch (err) {
       console.error('Error playing track:', err);
     }
   };
- 
+  
+
   const togglePlayPause = async () => {
     if (!player) return;
-  
+
     const state = await player.getCurrentState();
     if (!state) return;
-  
+
     if (state.paused) {
       await player.resume();
     } else {
       await player.pause();
     }
-  };    
-  
+  };
+
   const handleNext = () => player?.nextTrack();
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newPosition = parseInt(e.target.value);
@@ -163,23 +216,36 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ accessToken, playl
 
   return (
     <div style={{ padding: '1rem' }}>
-      <h3>Spotify Player</h3>
+      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+      <button className="spotify-icon-btn" onClick={() => setShowSetlist(prev => !prev)}>
+        {showSetlist ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+      </button>
+
+      <h3 style={{ margin: 0, padding: '0.5rem' }}>Setlist</h3>
+
+    </div>
+
       {!isReady ? (
         <p>Loading Spotify Player...</p>
       ) : (
         <>
-          <div>
+        {showSetlist && (
+          <div className='setlist-container'>
             {tracks.map((track, index) => (
               <div key={track.uri} style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
-                <img src={track.albumImage} alt={track.name} width={64} height={64} />
+                <img src={track.albumImage} alt={track.name} width={64} height={64} id='album-image' />
                 <div style={{ marginLeft: '1rem', flexGrow: 1 }}>
                   <p style={{ margin: 0, fontWeight: 'bold' }}>{track.name}</p>
                   <p style={{ margin: 0 }}>{track.artists}</p>
                 </div>
-                <button onClick={() => playTrack(track.uri)}>▶️</button>
+                <button className="spotify-btn" onClick={() => playTrack(track.uri)}>
+                  <Play size={16} />
+                </button>
               </div>
             ))}
           </div>
+        )}
+
 
           {currentTrack && (
             <div style={{ marginTop: '2rem', padding: '1rem', borderTop: '1px solid #ccc' }}>
@@ -197,10 +263,16 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ accessToken, playl
                     {currentTrack.artists?.map((a: any) => a.name).join(', ') || ''}
                   </p>
                 </div>
-                <button onClick={togglePlayPause}>
-                  {isPlaying ? '⏸️ Pause' : '▶️ Play'}
+
+                <button className="spotify-btn" onClick={togglePlayPause}>
+                  {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+                  {isPlaying ? 'Pause' : 'Play'}
                 </button>
-                <button onClick={handleNext}>⏭️</button>
+
+                <button className="spotify-btn" onClick={handleNext}>
+                  <SkipForward size={16} /> Next
+                </button>
+
               </div>
               <input
                 type="range"
@@ -216,7 +288,6 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ accessToken, playl
               </div>
             </div>
           )}
-
         </>
       )}
     </div>
