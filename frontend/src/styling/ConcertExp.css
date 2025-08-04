@@ -1,5 +1,6 @@
 .exp-container {
   padding: 1rem;
+  position: relative;
 }
 
 .title {
@@ -24,6 +25,9 @@
 }
 
 .cancel-button {
+  position: absolute;
+  top: 30px;
+  right: 90px;
   background-color: #4b5563;
 }
 
@@ -31,13 +35,13 @@
   background-color: #374151;
 }
 
-.save-button {
+/* .save-button {
   background-color: #16a34a;
 }
 
 .save-button:hover {
   background-color: #15803d;
-}
+} */
 
 .delete-button {
   background-color: #dc2626;
@@ -49,7 +53,8 @@
   margin-bottom: 1rem;
 }
 
-.media-section, .note-section {
+.media-section,
+.note-section {
   flex: 1;
 }
 
@@ -114,4 +119,11 @@
 
 .save-button-wrapper {
   margin-top: 1rem;
+}
+
+.edit-button,
+.save-button {
+  position: absolute;
+  top: 30px;
+  right: 15px;
 }

@@ -1,19 +1,22 @@
-import React, { useState } from 'react';
-import { ConcertDetails } from 'types/types';
+import React, { useState } from "react";
+import { ConcertDetails } from "types/types";
 
 interface AddTicketFormProps {
-    onAddTicket: (concertDetails: ConcertDetails) => void;
-    onCancel: () => void;
-  }
+  onAddTicket: (concertDetails: ConcertDetails) => void;
+  onCancel: () => void;
+}
 
-const AddTicketForm: React.FC<AddTicketFormProps> = ({ onAddTicket, onCancel }) => {
+const AddTicketForm: React.FC<AddTicketFormProps> = ({
+  onAddTicket,
+  onCancel,
+}) => {
   const [concertDetails, setConcertDetails] = useState<ConcertDetails>({
-    artist: '',
-    tour: '',
-    date: '',
-    venue: '',
-    seatInfo: '',
-    _id: ''
+    artist: "",
+    tour: "",
+    date: "",
+    venue: "",
+    seatInfo: "",
+    _id: "",
   });
 
   // Handle form input changes
@@ -27,25 +30,28 @@ const AddTicketForm: React.FC<AddTicketFormProps> = ({ onAddTicket, onCancel }) 
     e.preventDefault();
 
     try {
-        const response = await fetch('http://127.0.0.1:4000/api/concerts/ticket', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(concertDetails)
-        });
-        const data = await response.json();
-        if (response.ok) {
-          console.log('response data:', data);
-
-            console.log('ticket saved:', data.concert)
-            const ticketWithId = { ...concertDetails, id: data.concert._id };
-            onAddTicket(ticketWithId); // Pass concert details to parent component
-        } else {
-            console.error('error:', data.message)
+      const response = await fetch(
+        "http://127.0.0.1:4000/api/concerts/ticket",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(concertDetails),
         }
+      );
+      const data = await response.json();
+      if (response.ok) {
+        console.log("response data:", data);
+
+        console.log("ticket saved:", data.concert);
+        const ticketWithId = { ...concertDetails, id: data.concert._id };
+        onAddTicket(ticketWithId); // Pass concert details to parent component
+      } else {
+        console.error("error:", data.message);
+      }
     } catch (err) {
-        console.error('network error:', err)
+      console.error("network error:", err);
     }
   };
 

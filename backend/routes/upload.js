@@ -5,7 +5,7 @@ const fs = require('fs');
 const ConcertExperience = require('../models/ConcertExperience');
 const ConcertMemory = require('../models/ConcertMemory');
 const ConcertTicket = require('../models/ConcertTicket')
-const router = express.Router(); // ✅ this was missing in your original error
+const router = express.Router(); 
 
 // Ensure upload folders exist
 const ensureUploadDirs = () => {
