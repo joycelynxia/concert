@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ConcertDetails, ConcertMemory } from "types/types";
 import SimpleSlideshow from "../components/MediaSlideshow";
 import "../styling/ConcertExp.css";
 import { SpotifyPlayer } from "components/Spotify/SpotifyPlayer";
 import { useSpotify } from "context/SpotifyContext";
 import { SpotifyEmbed } from "components/Spotify/SpotifyEmbed";
-
+import { Navigate } from "react-router-dom";
 const ConcertExpPage: React.FC = () => {
   const { id } = useParams();
   const { tokens } = useSpotify();
@@ -20,7 +20,7 @@ const ConcertExpPage: React.FC = () => {
   const [selectedMediaIds, setSelectedMediaIds] = useState<string[]>([]);
   const [noteID, setNoteID] = useState("");
   const [newPlaylistId, setNewPlaylistId] = useState("");
-
+  const nav = useNavigate();
   useEffect(() => {
     if (!id) return;
 
@@ -158,8 +158,13 @@ const ConcertExpPage: React.FC = () => {
     }
   };
 
+  const returnToTickets = () => {
+    nav('/')
+  }
+
   return (
     <div className="exp-container">
+      <button onClick={returnToTickets}>&lt;</button>
       <h1 className="title">
         {concertDetails?.artist}: {concertDetails?.tour}
       </h1>

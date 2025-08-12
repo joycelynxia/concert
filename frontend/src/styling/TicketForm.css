@@ -1,0 +1,11 @@
+form {
+  height: 70vh;
+  overflow-y: scroll;
+}
+
+input[type="text"], input[type="date"],
+textarea {
+  width: 100%;       /* take full width of parent */
+  max-width: 100%;   /* prevent going past container */
+  box-sizing: border-box; /* include padding in the width */
+}

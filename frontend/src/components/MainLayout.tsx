@@ -8,8 +8,8 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({children}) => {
     return (
-        <div style={{display:'flex'}}>
-            <Sidebar/>
+        <div className='main-layout'>
+            {/* <Sidebar/> */}
 
             <div style={{flex:1}}>
                 {children}

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ConcertDetails } from "types/types";
-
+import '../styling/TicketForm.css'
 interface AddTicketFormProps {
   onAddTicket: (concertDetails: ConcertDetails) => void;
   onCancel: () => void;
@@ -16,6 +16,10 @@ const AddTicketForm: React.FC<AddTicketFormProps> = ({
     date: "",
     venue: "",
     seatInfo: "",
+    section: "",
+    spotifyPlaylistId: "",
+    priceCents: 0,
+    genre: "",
     _id: "",
   });
 
@@ -107,7 +111,43 @@ const AddTicketForm: React.FC<AddTicketFormProps> = ({
               name="seatInfo"
               value={concertDetails.seatInfo}
               onChange={handleInputChange}
+            />
+          </label>
+          <label>
+            Section:
+            <input
+              type="text"
+              name="section"
+              value={concertDetails.section}
+              onChange={handleInputChange}
               required
+            />
+          </label>
+          <label>
+            Setlist (Spotify Playlist Id):
+            <input
+              type="text"
+              name="spotifyPlaylistId"
+              value={concertDetails.spotifyPlaylistId}
+              onChange={handleInputChange}
+            />
+          </label>
+          <label>
+            Genre:
+            <input
+              type="text"
+              name="genre"
+              value={concertDetails.genre}
+              onChange={handleInputChange}
+            />
+          </label>
+          <label>
+            Price:
+            <input
+              type="text"
+              name="priceCents"
+              value={concertDetails.priceCents}
+              onChange={handleInputChange}
             />
           </label>
           <div className="form-buttons">

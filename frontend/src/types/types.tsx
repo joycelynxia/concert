@@ -4,7 +4,10 @@ export interface ConcertDetails {
     date: string;
     venue?: string;
     seatInfo?: string;
+    section?: string;
     spotifyPlaylistId?: string;
+    priceCents?: number;
+    genre?: string;
     _id: string;
   }
 

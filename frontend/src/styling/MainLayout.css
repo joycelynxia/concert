@@ -1,7 +1,12 @@
 .main-layout {
     display: flex;
-    min-height: 100vh; /* Ensure the layout takes up the full viewport height */
-  }
+    min-height: 100vh; 
+    background-color: rgb(236, 217, 255);
+    background-image:
+    linear-gradient(to right, rgb(241, 228, 255) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(241, 228, 255) 1px, transparent 1px);
+  background-size: 25px 25px; /* size of the grid squares */
+}
   
   .main-content {
     flex: 1; /* Take up the remaining space */

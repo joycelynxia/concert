@@ -128,7 +128,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
             setupPlayer();
           }
         };
-        document.body.appendChild(script)
+        document.body.appendChild(script);
       } else {
         if (window.Spotify) {
           setupPlayer();
@@ -143,7 +143,7 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
       }
     };
     loadSdk();
-    
+
     return () => {
       if (player) player.disconnect();
       window.onSpotifyWebPlaybackSDKReady = () => {};
@@ -274,13 +274,14 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
                     alignItems: "center",
                     marginBottom: "1rem",
                   }}
+                  onClick={() => playTrack(track.uri)}
                 >
                   <img
                     src={track.albumImage}
                     alt={track.name}
                     width={64}
                     height={64}
-                    id="album-image"
+                    className="album-image"
                   />
                   <div style={{ marginLeft: "1rem", flexGrow: 1 }}>
                     <p style={{ margin: 0, fontWeight: "bold" }}>
@@ -288,69 +289,70 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
                     </p>
                     <p style={{ margin: 0 }}>{track.artists}</p>
                   </div>
-                  <button
+                  {/* <button
                     className="spotify-btn"
                     onClick={() => playTrack(track.uri)}
                   >
-                    <Play size={16} />
-                  </button>
+                    <Play size={20} />
+                  </button> */}
                 </div>
               ))}
             </div>
           )}
 
           {currentTrack && (
-            <div
-              style={{
-                marginTop: "2rem",
-                padding: "1rem",
-                borderTop: "1px solid #ccc",
-              }}
-            >
-              <h4>Now Playing</h4>
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <img
-                  src={currentTrack.album?.images?.[0]?.url || ""}
-                  width={64}
-                  height={64}
-                  alt="Album"
-                />
-                <div style={{ marginLeft: "1rem", flexGrow: 1 }}>
-                  <p style={{ margin: 0, fontWeight: "bold" }}>
-                    {currentTrack.name}
-                  </p>
-                  <p style={{ margin: 0 }}>
-                    {currentTrack.artists?.map((a: any) => a.name).join(", ") ||
-                      ""}
-                  </p>
+            <div className="music-player-container">
+              <div className="current-track">
+                <div className="track-info">
+                  <img
+                    className="album-image"
+                    src={currentTrack.album?.images?.[0]?.url || ""}
+                    width={50}
+                    height={50}
+                    alt="Album"
+                  />
+                  <div className="artist-and-title">
+                    <p id="title">
+                      {currentTrack.name}
+                    </p>
+                    <p id="artist">
+                      {currentTrack.artists
+                        ?.map((a: any) => a.name)
+                        .join(", ") || ""}
+                    </p>
+                  </div>
                 </div>
 
-                <button className="spotify-btn" onClick={togglePlayPause}>
-                  {isPlaying ? <Pause size={16} /> : <Play size={16} />}
-                  {isPlaying ? "Pause" : "Play"}
-                </button>
+                <div className="button-container">
+                  <button className="spotify-btn" onClick={togglePlayPause}>
+                    {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+                  </button>
 
-                <button className="spotify-btn" onClick={handleNext}>
-                  <SkipForward size={16} /> Next
-                </button>
-              </div>
-              <input
-                type="range"
-                min={0}
-                max={duration}
-                value={progress}
-                onChange={handleSeek}
-                style={{ width: "100%", marginTop: "1rem" }}
-              />
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  fontSize: "0.85rem",
-                }}
-              >
-                <span>{formatTime(progress)}</span>
-                <span>{formatTime(duration)}</span>
+                  <button className="spotify-btn" onClick={handleNext}>
+                    <SkipForward size={20} />
+                  </button>
+                </div>
+
+                <div className="progress-bar">
+                  <input
+                    type="range"
+                    min={0}
+                    max={duration}
+                    value={progress}
+                    onChange={handleSeek}
+                    style={{ width: "100%", marginTop: "1rem" }}
+                  />
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      fontSize: "0.85rem",
+                    }}
+                  >
+                    <span>{formatTime(progress)}</span>
+                    <span>{formatTime(duration)}</span>
+                  </div>
+                </div>
               </div>
             </div>
           )}
