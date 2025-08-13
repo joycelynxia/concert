@@ -1,14 +1,20 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ConcertDetails } from "types/types";
-import '../styling/TicketForm.css'
-interface AddTicketFormProps {
-  onAddTicket: (concertDetails: ConcertDetails) => void;
-  onCancel: () => void;
+import "../styling/TicketForm.css";
+interface TicketFormProps {
+  onSave: (concertDetails: ConcertDetails) => void;
+  onCancel?: () => void;
+  onDelete: (ticketId: string) => void;
+  isEditing: boolean;
+  initialData?: ConcertDetails;
 }
 
-const AddTicketForm: React.FC<AddTicketFormProps> = ({
-  onAddTicket,
+const TicketForm: React.FC<TicketFormProps> = ({
+  onSave,
   onCancel,
+  onDelete,
+  isEditing,
+  initialData,
 }) => {
   const [concertDetails, setConcertDetails] = useState<ConcertDetails>({
     artist: "",
@@ -17,11 +23,17 @@ const AddTicketForm: React.FC<AddTicketFormProps> = ({
     venue: "",
     seatInfo: "",
     section: "",
-    spotifyPlaylistId: "",
+    setlist: "",
     priceCents: 0,
     genre: "",
     _id: "",
   });
+
+  useEffect(() => {
+    if (isEditing && initialData) {
+      setConcertDetails(initialData);
+    }
+  }, [isEditing, initialData]);
 
   // Handle form input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,23 +46,27 @@ const AddTicketForm: React.FC<AddTicketFormProps> = ({
     e.preventDefault();
 
     try {
-      const response = await fetch(
-        "http://127.0.0.1:4000/api/concerts/ticket",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(concertDetails),
-        }
-      );
+      console.log(`editing: ${isEditing} | ${concertDetails._id}`);
+      const url = isEditing
+        ? `http://127.0.0.1:4000/api/concerts/ticket/${concertDetails._id}`
+        : `http://127.0.0.1:4000/api/concerts/ticket`;
+
+      const method = isEditing ? "PUT" : "POST";
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(concertDetails),
+      });
+
       const data = await response.json();
       if (response.ok) {
         console.log("response data:", data);
 
         console.log("ticket saved:", data.concert);
-        const ticketWithId = { ...concertDetails, id: data.concert._id };
-        onAddTicket(ticketWithId); // Pass concert details to parent component
+        // const ticketWithId = { ...concertDetails, id: data.concert._id };
+        onSave(data.concert); // Pass concert details to parent component
       } else {
         console.error("error:", data.message);
       }
@@ -59,10 +75,27 @@ const AddTicketForm: React.FC<AddTicketFormProps> = ({
     }
   };
 
+  const formatDateForInput = (dateStr: string) => {
+    if (!dateStr) return "";
+    const date = new Date(dateStr);
+    // toISOString() returns "YYYY-MM-DDTHH:mm:ss.sssZ"
+    // .slice(0,10) extracts just "YYYY-MM-DD"
+    return date.toISOString().slice(0, 10);
+  };
+
+  const formatSpotifyPlaylist = (url: string) => {
+    const regex = /playlist\/(.+)$/;
+    const match = url.match(regex);
+    if (match) {
+      return match[1];
+    }
+    return url;
+  };
+
   return (
     <div className="form-overlay">
       <div className="form-container">
-        <h2>Add Concert Details</h2>
+        <h2>{isEditing ? "Edit Details" : "Add Concert"}</h2>
         <form onSubmit={handleSubmit}>
           <label>
             Artist:
@@ -89,7 +122,7 @@ const AddTicketForm: React.FC<AddTicketFormProps> = ({
             <input
               type="date"
               name="date"
-              value={concertDetails.date}
+              value={formatDateForInput(concertDetails.date)}
               onChange={handleInputChange}
               required
             />
@@ -101,7 +134,6 @@ const AddTicketForm: React.FC<AddTicketFormProps> = ({
               name="venue"
               value={concertDetails.venue}
               onChange={handleInputChange}
-              required
             />
           </label>
           <label>
@@ -120,15 +152,14 @@ const AddTicketForm: React.FC<AddTicketFormProps> = ({
               name="section"
               value={concertDetails.section}
               onChange={handleInputChange}
-              required
             />
           </label>
           <label>
             Setlist (Spotify Playlist Id):
             <input
               type="text"
-              name="spotifyPlaylistId"
-              value={concertDetails.spotifyPlaylistId}
+              name="setlist"
+              value={formatSpotifyPlaylist(concertDetails.setlist || "")}
               onChange={handleInputChange}
             />
           </label>
@@ -144,17 +175,21 @@ const AddTicketForm: React.FC<AddTicketFormProps> = ({
           <label>
             Price:
             <input
-              type="text"
+              type="number"
               name="priceCents"
               value={concertDetails.priceCents}
               onChange={handleInputChange}
             />
           </label>
           <div className="form-buttons">
-            <button type="submit">Add Ticket</button>
-            <button type="button" onClick={onCancel}>
-              Cancel
-            </button>
+            {isEditing ? (
+              <button onClick={() => onDelete(concertDetails._id)}>
+                Delete
+              </button>
+            ) : (
+              <button onClick={onCancel}>Cancel</button>
+            )}
+            <button type="submit">Save</button>
           </div>
         </form>
       </div>
@@ -162,4 +197,4 @@ const AddTicketForm: React.FC<AddTicketFormProps> = ({
   );
 };
 
-export default AddTicketForm;
+export default TicketForm;

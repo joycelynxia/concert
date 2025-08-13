@@ -1,14 +1,15 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import JsBarcode from "jsbarcode";
 import "../styling/ConcertTicket.css"; // Import the CSS for styling
 import { ConcertDetails } from "types/types";
 import { format } from "date-fns";
+import { Navigate, useNavigate } from "react-router-dom";
+import TicketForm from "./TicketForm";
 
-type ConcertTicketProps = ConcertDetails & {
-  handleEditButton: (concertDetails: ConcertDetails) => void;
-  handleViewDetailsButton: (id: string) => void;
-
-};
+interface ConcertTicketProps extends ConcertDetails {
+  onDelete: (id: string) => void;
+  onSave: (ticket: ConcertDetails) => void;
+}
 const ConcertTicket: React.FC<ConcertTicketProps> = (props) => {
   const {
     artist,
@@ -20,10 +21,14 @@ const ConcertTicket: React.FC<ConcertTicketProps> = (props) => {
     priceCents,
     genre,
     _id,
-    handleEditButton,
-    handleViewDetailsButton,
+    onDelete,
+    onSave,
   } = props;
+
   const barcodeRef = useRef<SVGSVGElement>(null);
+  const navigate = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
+  const ticketForForm = { ...props };
 
   useEffect(() => {
     if (barcodeRef.current) {
@@ -37,64 +42,76 @@ const ConcertTicket: React.FC<ConcertTicketProps> = (props) => {
         margin: 0,
       });
     }
-  }, []);
+  }, [artist, date]);
 
   const formatted = format(new Date(date), "EEE MMM d yyyy").toUpperCase();
 
+  const handleViewButton = () => {
+    navigate(`/concert/${_id}`);
+  };
+
+  const openEditForm = () => setIsEditing(true);
+  const closeEditForm = () => setIsEditing(false);
+
+const renderEditForm = () =>
+    isEditing ? (
+      <TicketForm
+        onSave={(updatedTicket) => {
+          onSave(updatedTicket);
+          closeEditForm();
+        }}
+        onDelete={(id) => {
+          onDelete(id);
+          closeEditForm();
+        }}
+        onCancel={closeEditForm}
+        isEditing={true}
+        initialData={props}
+      />
+    ) : null;
   return (
-    <div className="ticket">
-      <div className="ticket-header">
-        <div className="ticket-venue">{venue}</div>
-        <div className="ticket-artist">{artist}</div>
-        <div className="ticket-date">{formatted}</div>
-      </div>
-      <div className="ticket-body">
-        <div className="ticket-details">
-          <div className="detail-item">
-            <div className="ticket-label">section</div>
-            <div className="ticket-value">{section || "-"}</div>
+    <>
+   {renderEditForm()}
+      <div className="ticket">
+        <div className="ticket-header">
+          <div className="ticket-venue">{venue}</div>
+          <div className="ticket-artist">
+            {artist}: {tour}
           </div>
-          <div className="detail-item">
-            <div className="ticket-label">seat</div>
-            <div className="ticket-value">{seatInfo || "-"}</div>
-          </div>{" "}
-          <div className="detail-item">
-            <div className="ticket-label">price</div>
-            <div className="ticket-value">{priceCents || "-"}</div>
-          </div>{" "}
-          <div className="detail-item">
-            <div className="ticket-label">genre</div>
-            <div className="ticket-value">{genre || "-"}</div>
+          <div className="ticket-date">{formatted}</div>
+        </div>
+        <div className="ticket-body">
+          <div className="ticket-details">
+            <div className="detail-item">
+              <div className="ticket-label">section</div>
+              <div className="ticket-value">{section || "-"}</div>
+            </div>
+            <div className="detail-item">
+              <div className="ticket-label">seat</div>
+              <div className="ticket-value">{seatInfo || "-"}</div>
+            </div>{" "}
+            <div className="detail-item">
+              <div className="ticket-label">price</div>
+              <div className="ticket-value">{priceCents || "-"}</div>
+            </div>{" "}
+            <div className="detail-item">
+              <div className="ticket-label">genre</div>
+              <div className="ticket-value">{genre || "-"}</div>
+            </div>
           </div>
-        </div>
-        <div className="entry-details">
-          <div className="num-songs"></div>
-          <div className="num-photos"></div>
-          <div className="has-entry"></div>
-        </div>
-        <div className="other-buttons">
-          <button
-            onClick={() =>
-              handleEditButton({
-                artist,
-                tour,
-                date,
-                venue,
-                seatInfo,
-                section,
-                priceCents,
-                genre,
-                _id,
-              })
-            }
-          >
-            edit
-          </button>
-          <button>share</button>
-          <button onClick={()=>handleViewDetailsButton(_id)}>view details</button>
+          <div className="entry-details">
+            <div className="num-songs"></div>
+            <div className="num-photos"></div>
+            <div className="has-entry"></div>
+          </div>
+          <div className="other-buttons">
+            <button onClick={() => setIsEditing(true)}>edit</button>
+            <button>share</button>
+            <button onClick={handleViewButton}>view details</button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

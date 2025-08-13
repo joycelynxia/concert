@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ConcertDetails, ConcertMemory } from "types/types";
 import SimpleSlideshow from "../components/MediaSlideshow";
@@ -7,6 +7,8 @@ import { SpotifyPlayer } from "components/Spotify/SpotifyPlayer";
 import { useSpotify } from "context/SpotifyContext";
 import { SpotifyEmbed } from "components/Spotify/SpotifyEmbed";
 import { Navigate } from "react-router-dom";
+import Linkify from "react-linkify";
+
 const ConcertExpPage: React.FC = () => {
   const { id } = useParams();
   const { tokens } = useSpotify();
@@ -20,7 +22,7 @@ const ConcertExpPage: React.FC = () => {
   const [selectedMediaIds, setSelectedMediaIds] = useState<string[]>([]);
   const [noteID, setNoteID] = useState("");
   const [newPlaylistId, setNewPlaylistId] = useState("");
-  const nav = useNavigate();
+  const navigate = useNavigate();
   useEffect(() => {
     if (!id) return;
 
@@ -36,16 +38,16 @@ const ConcertExpPage: React.FC = () => {
       .then((data) => setConcertDetails(data))
       .catch(() => null);
 
-    fetch(`http://127.0.0.1:4000/api/concerts/${id}/setlist`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.spotifyPlaylistId) {
-          setConcertDetails((prev) =>
-            prev ? { ...prev, spotifyPlaylistId: data.spotifyPlaylistId } : prev
-          );
-        }
-      })
-      .catch((err) => console.error("Failed to fetch playlist ID:", err));
+    // fetch(`http://127.0.0.1:4000/api/concerts/${id}/setlist`)
+    //   .then((res) => res.json())
+    //   .then((data) => {
+    //     if (data.setlist) {
+    //       setConcertDetails((prev) =>
+    //         prev ? { ...prev, setlist: data.setlist } : prev
+    //       );
+    //     }
+    //   })
+    //   .catch((err) => console.error("Failed to fetch playlist ID:", err));
   }, [id]);
 
   useEffect(() => {
@@ -141,17 +143,17 @@ const ConcertExpPage: React.FC = () => {
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ spotifyPlaylistId: newPlaylistId }),
+          body: JSON.stringify({ setlist: newPlaylistId }),
         }
       );
       const data = await res.json();
       console.log(data);
       if (!res.ok) throw new Error(data.error || "Failed to save playlist ID");
       setConcertDetails((prev) =>
-        prev ? { ...prev, spotifyPlaylistId: data.spotifyPlaylistId } : prev
+        prev ? { ...prev, setlist: data.setlist } : prev
       );
       setNewPlaylistId("");
-      console.log("concert playlist id:", concertDetails?.spotifyPlaylistId);
+      console.log("concert playlist id:", concertDetails?.setlist);
     } catch (err) {
       alert("Error saving playlist ID");
       console.error(err);
@@ -159,16 +161,24 @@ const ConcertExpPage: React.FC = () => {
   };
 
   const returnToTickets = () => {
-    nav('/')
-  }
+    navigate("/");
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewPlaylistId(value);
+  };
 
   return (
     <div className="exp-container">
-      <button onClick={returnToTickets}>&lt;</button>
-      <h1 className="title">
-        {concertDetails?.artist}: {concertDetails?.tour}
-      </h1>
-
+      <div className="concert-exp-header">
+        <button className="back-button" onClick={returnToTickets}>
+          &lt;
+        </button>
+        <h1 className="title">
+          {concertDetails?.artist}: {concertDetails?.tour}
+        </h1>
+      </div>
       {editMode ? (
         <>
           <button
@@ -293,7 +303,7 @@ const ConcertExpPage: React.FC = () => {
             <div className="note-section">
               <h2 className="section-title">Concert Note</h2>
               <pre className="note-display">
-                {note?.content || "No note yet."}
+                <Linkify>{note?.content || "No note yet."}</Linkify>
               </pre>
             </div>
           </div>
@@ -302,21 +312,15 @@ const ConcertExpPage: React.FC = () => {
 
       {/* SETLIST PLAYER */}
       {tokens &&
-        (concertDetails?.spotifyPlaylistId ? (
+        (concertDetails?.setlist ? (
           <SpotifyPlayer
             accessToken={tokens.access_token}
-            playlistId={concertDetails.spotifyPlaylistId}
+            playlistId={concertDetails.setlist}
           />
         ) : (
-          <div className="spotify-id-entry">
-            <h3>Set Spotify Playlist for this Concert</h3>
-            <input
-              type="text"
-              placeholder="Paste Spotify Playlist URL or URI"
-              value={newPlaylistId}
-              onChange={(e) => setNewPlaylistId(e.target.value)}
-            />
-            <button onClick={handleAddPlaylist}>Save Playlist</button>
+          <div>
+            <input type="text" onChange={handleInputChange} />
+            <button onClick={handleAddPlaylist}> add playlist</button>
           </div>
         ))}
     </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import AddTicketForm from "components/AddTicketForm";
+import TicketForm from "components/TicketForm";
 import ConcertTicket from "components/Ticket";
 import { ConcertDetails } from "types/types";
 import { useNavigate } from "react-router-dom";
@@ -11,9 +11,6 @@ function TicketsPage() {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [tickets, setTickets] = useState<ConcertDetails[]>([]);
   const [error, setError] = useState(null);
-  const [ticketsToDelete, setTicketsToDelete] = useState<Set<string>>(
-    new Set()
-  );
   const [edit, setEdit] = useState(false);
 
   useEffect(() => {
@@ -32,71 +29,64 @@ function TicketsPage() {
       });
   }, []);
 
-  const handleAddTicket = (concertDetails: ConcertDetails) => {
-    setTickets([...tickets, concertDetails]);
-    setIsFormVisible(false);
-  };
-
-  const handleDeleteTicket = async () => {
-    if (ticketsToDelete.size === 0) {
-      alert("No tickets selected for deletion.");
-      return;
-    }
-
+  const handleDeleteTicket = async (ticketId: string) => {
     const confirm = window.confirm(
-      "Are you sure you want to delete the selected concert(s)?"
+      "Are you sure you want to delete the selected concert?"
     );
 
     if (confirm) {
-      const ids = Array.from(ticketsToDelete);
-      for (const id of ids) {
-        try {
-          const res = await fetch(
-            `http://127.0.0.1:4000/api/concerts/ticket/${id}`,
-            {
-              method: "DELETE",
-            }
-          );
-          if (res.ok) {
-            setTickets((prev) => prev.filter((ticket) => ticket._id !== id));
-          } else {
-            console.error(`Failed to delete ticket with id ${id}`);
-          }
-        } catch (err) {
-          console.error("Network error during deletion:", err);
-        }
-      }
-
       try {
-        const refreshed = await fetch(
-          "http://127.0.0.1:4000/api/concerts/all_tickets"
+        const res = await fetch(
+          `http://127.0.0.1:4000/api/concerts/ticket/${ticketId}`,
+          {
+            method: "DELETE",
+          }
         );
-        const updatedTickets = await refreshed.json();
-        setTickets(Array.isArray(updatedTickets) ? updatedTickets : []);
+        if (res.ok) {
+          setTickets((prev) =>
+            prev.filter((ticket) => ticket._id !== ticketId)
+          );
+        } else {
+          console.error(`Failed to delete ticket with id ${ticketId}`);
+        }
       } catch (err) {
-        console.error("Failed to refresh tickets list after deletion", err);
+        console.error("Network error during deletion:", err);
       }
-
-      setEdit(false);
-      setTicketsToDelete(new Set());
     }
+
+    // try {
+    //   const refreshed = await fetch(
+    //     "http://127.0.0.1:4000/api/concerts/all_tickets"
+    //   );
+    //   const updatedTickets = await refreshed.json();
+    //   setTickets(Array.isArray(updatedTickets) ? updatedTickets : []);
+    // } catch (err) {
+    //   console.error("Failed to refresh tickets list after deletion", err);
+    // }
+    // }
   };
 
-  const handleTicketClick = (id: string) => {
-    navigate(`/concert/${id}`);
-  };
+  const handleSaveTicket = (updatedConcert: ConcertDetails) => {
+    console.log('in tickets page')
+    setIsFormVisible(false);
+    console.log(updatedConcert)
 
-  const toggleTicketSelection = (id: string) => {
-    setTicketsToDelete((prev) => {
-      const newSet = new Set(prev);
-      newSet.has(id) ? newSet.delete(id) : newSet.add(id);
-      return newSet;
+    setTickets((prevTickets) => {
+      if (!prevTickets) return [updatedConcert];
+
+      const exists = prevTickets.some((t) => t._id === updatedConcert._id);
+      if (exists) {
+        return prevTickets.map((t) =>
+          t._id === updatedConcert._id ? updatedConcert : t
+        );
+      } else {
+        return [...prevTickets, updatedConcert];
+      }
     });
   };
 
-  const handleEditButton = async (concertDetails: ConcertDetails) => {
-    setIsFormVisible(true);
-    setTickets([...tickets, concertDetails]);
+  const onToggleForm = () => {
+    setIsFormVisible(!isFormVisible);
   }
 
   return (
@@ -104,53 +94,26 @@ function TicketsPage() {
       <div className="header">
         <SpotifyLogin />
         <h1 className="page-title">my concerts</h1>
-        <div className="ticket-button-container">
-          <button
-            className="ticket-button"
-            id="add"
-            onClick={() => setIsFormVisible(true)}
-          >
-            +
-          </button>
-          <button
-            className="ticket-button"
-            id="delete"
-            onClick={() => setEdit(true)}
-          >
-            Delete
-          </button>
-        </div>
-
+        <button
+          className="add-ticket-button"
+          id="add"
+          onClick={onToggleForm}
+        >
+          +
+        </button>
         {isFormVisible && (
           <div className="form-overlay" onClick={() => setIsFormVisible(false)}>
             <div
               className="form-container"
               onClick={(e) => e.stopPropagation()}
             >
-              <AddTicketForm
-                onAddTicket={handleAddTicket}
+              <TicketForm
+                onSave={handleSaveTicket}
                 onCancel={() => setIsFormVisible(false)}
+                onDelete={handleDeleteTicket}
+                isEditing={false}
               />
             </div>
-          </div>
-        )}
-
-        {edit && (
-          <div className="confirm-delete-container">
-            <button
-              className="confirm-delete-button"
-              onClick={handleDeleteTicket}
-            >
-              Confirm Delete
-            </button>
-            <button
-              onClick={() => {
-                setEdit(false);
-                setTicketsToDelete(new Set());
-              }}
-            >
-              Cancel
-            </button>
           </div>
         )}
       </div>
@@ -160,16 +123,8 @@ function TicketsPage() {
           {tickets.map((ticket) => (
             <div
               key={ticket._id}
-              className={`ticket-item ${edit ? "deletable" : ""} ${
-                ticketsToDelete.has(ticket._id) ? "selected" : ""
-              }`}
-              // onClick={() =>
-              //   edit
-              //     ? toggleTicketSelection(ticket._id)
-              //     : handleTicketClick(ticket._id)
-              // }
             >
-              <ConcertTicket {...ticket} handleEditButton={handleEditButton} handleViewDetailsButton={handleTicketClick} />
+              <ConcertTicket {...ticket} onDelete={handleDeleteTicket} onSave={handleSaveTicket}/>
             </div>
           ))}
         </div>
