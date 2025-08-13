@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import '../styling/Sidebar.css';
 import { SpotifyLogin } from './Spotify/SpotifyLogin';
-import { SpotifyLogoutButton } from './Spotify/SpotifyLogoutVButton';
+import { SpotifyLogoutButton } from './Spotify/SpotifyLogoutButton';
 import { useSpotify } from 'context/SpotifyContext';
 import { Home, Calendar } from 'lucide-react'; // icons
 

@@ -3,12 +3,13 @@ body {
 }
 
 .ticket {
-  overflow: hidden;
+  /* overflow: hidden; */
   display: grid;
   grid-template-rows: 1fr 2fr;
   height: 300px;
   position: relative;
   cursor: default;
+  margin-bottom: 10px;
 }
 
 .ticket-header {

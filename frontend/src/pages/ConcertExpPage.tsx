@@ -172,9 +172,9 @@ const ConcertExpPage: React.FC = () => {
   return (
     <div className="exp-container">
       <div className="concert-exp-header">
-        <button className="back-button" onClick={returnToTickets}>
+        {/* <button className="back-button" onClick={returnToTickets}>
           &lt;
-        </button>
+        </button> */}
         <h1 className="title">
           {concertDetails?.artist}: {concertDetails?.tour}
         </h1>

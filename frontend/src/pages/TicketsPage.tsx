@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import TicketForm from "components/TicketForm";
 import ConcertTicket from "components/Ticket";
 import { ConcertDetails } from "types/types";
 import { useNavigate } from "react-router-dom";
 import "../styling/TicketsPage.css";
-import { SpotifyLogin } from "components/Spotify/SpotifyLogin";
 
 function TicketsPage() {
   const navigate = useNavigate();
@@ -92,7 +91,7 @@ function TicketsPage() {
   return (
     <>
       <div className="header">
-        <SpotifyLogin />
+        {/* <SpotifyLogin /> */}
         <h1 className="page-title">my concerts</h1>
         <button
           className="add-ticket-button"

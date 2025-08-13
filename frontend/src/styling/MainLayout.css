@@ -1,5 +1,6 @@
 .main-layout {
     display: flex;
+    flex-direction: column;
     position: relative;
     min-height: 100vh; 
     background-color: rgb(236, 217, 255);

@@ -1,0 +1,10 @@
+.spotify-logo {
+  height: 35px;
+  width: 35px;
+}
+
+.spotify-logo:hover {
+  transform: scale(1.1);
+  transition: 0.3s;
+  cursor: pointer;
+}

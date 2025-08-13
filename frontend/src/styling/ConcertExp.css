@@ -14,24 +14,6 @@
  align-items: center;
 }
 
-.back-button {
-  background-color: white;
-  border: 2px solid #ecd9ff;
-  border-radius: 10px;
-  height: 35px;
-  width: 30px;
-  color: #ecd9ff;
-  font-size: 25px;
-}
-
-.back-button:hover {
-  cursor: pointer;
-  color: #cfbbe4;
-  transform: scale(1.1);
-  background-color: #fcf9ff;
-  transition: 0.3s;
-}
-
 .title {
   font-size: 1.5rem;
   font-weight: bold;

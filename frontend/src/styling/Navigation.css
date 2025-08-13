@@ -1,0 +1,31 @@
+body {
+  font-size: 15px;
+}
+
+.nav-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+
+  background-color: white;
+}
+
+.pages {
+  display: flex;
+  flex-direction: row;
+  column-gap: 20px;
+}
+
+#journal:hover, #tracker:hover {
+  cursor: pointer;
+  transform: scale(1.1);
+  transition: 0.3s;
+}
+
+.logo {
+  font-weight: bold;
+  font-style: italic;
+  font-size: 25px;
+}

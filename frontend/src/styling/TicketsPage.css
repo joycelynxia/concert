@@ -9,16 +9,17 @@
 .tickets-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem;
+    padding-left: 2rem;
+    padding-right: 2rem;
     position: relative;
   }
   
   .page-title {
-    font-size: 2rem;
+    font-size: 25px;
     font-weight: bold;
     margin-bottom: 1.5rem;
     text-align: center;
-    font-style: italic;
+    /* font-style: italic; */
     letter-spacing: 1px;
   }
 
@@ -27,7 +28,7 @@
   }
   
   .add-ticket-button {
-    color: rgb(173, 124, 222);
+    color: #7caadc;
     background-color: white;
     /* padding: 0.6rem 1.2rem; */
     border: none;
