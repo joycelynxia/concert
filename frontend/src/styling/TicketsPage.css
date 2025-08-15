@@ -27,7 +27,7 @@
     display: flex;
   }
   
-  .add-ticket-button {
+  .add-ticket-button, .add-event-button {
     color: #7caadc;
     background-color: white;
     /* padding: 0.6rem 1.2rem; */
@@ -104,8 +104,8 @@
   .form-container {
     background: #ffffff;
     position: relative;
-    padding: 2rem;
-    width: 100%;
+    padding: 1.5rem;
+    width: 100vh;
     max-width: 500px;
     border-radius: 16px;
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
@@ -145,6 +145,7 @@
   
   .form-container input {
     width: 100%;
+    box-sizing: border-box;
     padding: 0.65rem;
     margin-top: 0.4rem;
     font-size: 1rem;

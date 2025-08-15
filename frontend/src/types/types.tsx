@@ -18,3 +18,19 @@ export interface ConcertMemory {
   mimeType?: string;
 }
   
+export interface PreferredSection {
+  sectionName: string; 
+  lastNotifiedPrice? : number;
+}
+export interface EventWatcher {
+  _id: string;
+  email: string;
+  eventName: string;
+  eventUrl: string;
+  preferredSections: PreferredSection[]; // e.g., ["Floor", "Balcony"]
+  maxPricePerTicket: number;
+  numTickets: number;
+  createdAt?: Date;
+  lastCheckedAt?: Date;
+  lastNotifiedPrice?: number;
+}

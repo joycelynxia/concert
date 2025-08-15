@@ -1,0 +1,51 @@
+.tracker-page-container {
+  display: flex;
+  flex-direction: column;
+}
+
+table {
+  table-layout: fixed;
+  justify-self: center;
+  width: 90%; /* or a set px width */
+  border-collapse: collapse;
+  background-color: white;
+  border-radius: 10px;
+}
+
+th, td {
+  text-align: left; /* Align text to the left */
+  padding: 8px;
+  border: 1px solid #ddd;
+}
+
+.event-table a {
+  text-decoration: none;
+  color: inherit
+}
+.event-table a:hover {
+    color: #7caadc
+}
+
+.individual-section-price {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+
+.icon {
+  background-color: inherit;
+  height: 25px;
+  width: 25px;
+}
+
+.icon:hover {
+  cursor: pointer;
+  transform: scale(1.1);
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  column-gap: 1rem;            /* Space between icons */
+}

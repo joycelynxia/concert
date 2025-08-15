@@ -14,19 +14,17 @@ const upload = multer({
   },
 });
 
-
 const formatSpotifyPlaylist = (setlist) => {
-    console.log(setlist)
-    const regex = /playlist\/(.+)$/;
-    const match = setlist.match(regex);
-    if (match) {
-    console.log(match[1])
+  console.log(setlist);
+  const regex = /playlist\/(.+)$/;
+  const match = setlist.match(regex);
+  if (match) {
+    console.log(match[1]);
 
-        return match[1];
+    return match[1];
+  }
 
-    }
-
-    return setlist;
+  return setlist;
 };
 
 router.post("/ticket", async (req, res) => {
@@ -57,7 +55,7 @@ router.post("/ticket", async (req, res) => {
       genre,
     });
 
-    console.log('formatting setlist')
+    console.log("formatting setlist");
     newTicket.setlist = formatSpotifyPlaylist(setlist);
 
     await newTicket.save();
@@ -123,12 +121,14 @@ router.put("/ticket/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 function updateField(oldValue, newValue) {
   if (newValue === undefined || newValue === "") {
     return oldValue;
   }
   return newValue;
 }
+
 router.get("/all_tickets", async (req, res) => {
   console.log("fetching all tickets");
   try {
@@ -183,7 +183,7 @@ router.get("/experience/user/:userId", async (req, res) => {
   }
 });
 
-router.get("experience/:id", async (req, res) => {
+router.get("/experience/:id", async (req, res) => {
   try {
     const experience = await ConcertExperience.findById(req.params.id).populate(
       "concertTicket"
