@@ -23,7 +23,7 @@ const TicketForm: React.FC<TicketFormProps> = ({
     venue: "",
     seatInfo: "",
     section: "",
-    setlist: "",
+    youtubePlaylist: "",
     priceCents: 0,
     genre: "",
     _id: "",
@@ -83,13 +83,9 @@ const TicketForm: React.FC<TicketFormProps> = ({
     return date.toISOString().slice(0, 10);
   };
 
-  const formatSpotifyPlaylist = (url: string) => {
-    const regex = /playlist\/(.+)$/;
-    const match = url.match(regex);
-    if (match) {
-      return match[1];
-    }
-    return url;
+  const formatYoutubePlaylist = (url: string) => {
+    const match = url.match(/[?&]list=([a-zA-Z0-9_-]+)/);
+    return match ? match[1] : url;
   };
 
   return (
@@ -155,11 +151,12 @@ const TicketForm: React.FC<TicketFormProps> = ({
             />
           </label>
           <label>
-            Setlist (Spotify Playlist Id):
+            YouTube playlist URL:
             <input
               type="text"
-              name="setlist"
-              value={formatSpotifyPlaylist(concertDetails.setlist || "")}
+              name="youtubePlaylist"
+              placeholder="https://www.youtube.com/playlist?list=..."
+              value={formatYoutubePlaylist(concertDetails.youtubePlaylist || "")}
               onChange={handleInputChange}
             />
           </label>

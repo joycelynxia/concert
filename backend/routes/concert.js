@@ -14,17 +14,13 @@ const upload = multer({
   },
 });
 
-const formatSpotifyPlaylist = (setlist) => {
-  console.log(setlist);
-  const regex = /playlist\/(.+)$/;
-  const match = setlist.match(regex);
-  if (match) {
-    console.log(match[1]);
-
-    return match[1];
-  }
-
-  return setlist;
+const formatYoutubePlaylist = (input) => {
+  if (!input || typeof input !== "string") return input;
+  const trimmed = input.trim();
+  const listMatch = trimmed.match(/[?&]list=([a-zA-Z0-9_-]+)/);
+  if (listMatch) return listMatch[1];
+  if (/^[a-zA-Z0-9_-]+$/.test(trimmed)) return trimmed;
+  return trimmed;
 };
 
 router.post("/ticket", async (req, res) => {
@@ -38,7 +34,7 @@ router.post("/ticket", async (req, res) => {
       venue,
       seatInfo,
       section,
-      setlist,
+      youtubePlaylist,
       priceCents,
       genre,
     } = req.body;
@@ -50,13 +46,10 @@ router.post("/ticket", async (req, res) => {
       venue,
       seatInfo,
       section,
-      setlist,
+      youtubePlaylist: formatYoutubePlaylist(youtubePlaylist) || undefined,
       priceCents,
       genre,
     });
-
-    console.log("formatting setlist");
-    newTicket.setlist = formatSpotifyPlaylist(setlist);
 
     await newTicket.save();
     console.log(newTicket._id); // ✅ Access the ID here
@@ -92,21 +85,19 @@ router.put("/ticket/:id", async (req, res) => {
       venue,
       seatInfo,
       section,
-      setlist,
+      youtubePlaylist,
       priceCents,
       genre,
     } = req.body;
-    // Update the ticket fields
-    // then update like this:
     ticket.artist = updateField(ticket.artist, artist);
     ticket.tour = updateField(ticket.tour, tour);
     ticket.date = updateField(ticket.date, date);
     ticket.venue = updateField(ticket.venue, venue);
     ticket.seatInfo = updateField(ticket.seatInfo, seatInfo);
     ticket.section = updateField(ticket.section, section);
-    ticket.setlist = updateField(
-      ticket.setlist,
-      formatSpotifyPlaylist(setlist)
+    ticket.youtubePlaylist = updateField(
+      ticket.youtubePlaylist,
+      youtubePlaylist ? formatYoutubePlaylist(youtubePlaylist) : undefined
     );
     ticket.priceCents = updateField(ticket.priceCents, priceCents);
     ticket.genre = updateField(ticket.genre, genre);

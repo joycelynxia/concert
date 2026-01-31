@@ -1,14 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import '../styling/Sidebar.css';
-import { SpotifyLogin } from './Spotify/SpotifyLogin';
-import { SpotifyLogoutButton } from './Spotify/SpotifyLogoutButton';
-import { useSpotify } from 'context/SpotifyContext';
-import { Home, Calendar } from 'lucide-react'; // icons
+import { Home, Calendar } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
-  const { tokens } = useSpotify();
-
   return (
     <div className='sidebar'>
       <div>
@@ -21,14 +16,6 @@ const Sidebar: React.FC = () => {
             <Calendar className='sidebar-icon' /> Calendar
           </Link>
         </nav>
-      </div>
-
-      <div className='sidebar-spotify'>
-        {!tokens ? (
-          <div id='login'><SpotifyLogin /></div>
-        ) : (
-          <div id='logout'><SpotifyLogoutButton /></div>
-        )}
       </div>
     </div>
   );

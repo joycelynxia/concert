@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { ConcertDetails, ConcertMemory } from "types/types";
 import SimpleSlideshow from "../components/MediaSlideshow";
 import "../styling/ConcertExp.css";
-import { SpotifyPlayer } from "components/Spotify/SpotifyPlayer";
-import { useSpotify } from "context/SpotifyContext";
-import { SpotifyEmbed } from "components/Spotify/SpotifyEmbed";
-import { Navigate } from "react-router-dom";
 import Linkify from "react-linkify";
+import { ExternalLink } from "lucide-react";
+
+const formatYoutubeId = (input: string): string => {
+  const trimmed = input.trim();
+  const match = trimmed.match(/[?&]list=([a-zA-Z0-9_-]+)/);
+  return match ? match[1] : trimmed;
+};
 
 const ConcertExpPage: React.FC = () => {
   const { id } = useParams();
-  const { tokens } = useSpotify();
   const [memories, setMemories] = useState<ConcertMemory[]>([]);
   const [concertDetails, setConcertDetails] = useState<ConcertDetails>();
   const [editMode, setEditMode] = useState(false);
@@ -21,8 +23,7 @@ const ConcertExpPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [selectedMediaIds, setSelectedMediaIds] = useState<string[]>([]);
   const [noteID, setNoteID] = useState("");
-  const [newPlaylistId, setNewPlaylistId] = useState("");
-  const navigate = useNavigate();
+  const [newYoutubePlaylistId, setNewYoutubePlaylistId] = useState("");
   useEffect(() => {
     if (!id) return;
 
@@ -35,7 +36,10 @@ const ConcertExpPage: React.FC = () => {
 
     fetch(`http://127.0.0.1:4000/api/concerts/ticket/${id}`)
       .then((res) => res.json())
-      .then((data) => setConcertDetails(data))
+      .then((data) => {
+        setConcertDetails(data);
+        setNewYoutubePlaylistId(data?.youtubePlaylist || "");
+      })
       .catch(() => null);
 
     // fetch(`http://127.0.0.1:4000/api/concerts/${id}/setlist`)
@@ -135,38 +139,27 @@ const ConcertExpPage: React.FC = () => {
     );
   };
 
-  const handleAddPlaylist = async () => {
-    if (!id || !newPlaylistId) return;
+  const handleAddYoutubePlaylist = async () => {
+    if (!id || !newYoutubePlaylistId) return;
     try {
       const res = await fetch(
-        `http://127.0.0.1:4000/api/concerts/${id}/playlist`,
+        `http://127.0.0.1:4000/api/concerts/${id}/youtube-playlist`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ setlist: newPlaylistId }),
+          body: JSON.stringify({ youtubePlaylist: newYoutubePlaylistId }),
         }
       );
       const data = await res.json();
-      console.log(data);
-      if (!res.ok) throw new Error(data.error || "Failed to save playlist ID");
+      if (!res.ok) throw new Error(data.error || "Failed to save YouTube playlist");
       setConcertDetails((prev) =>
-        prev ? { ...prev, setlist: data.setlist } : prev
+        prev ? { ...prev, youtubePlaylist: data.youtubePlaylist } : prev
       );
-      setNewPlaylistId("");
-      console.log("concert playlist id:", concertDetails?.setlist);
+      setNewYoutubePlaylistId(data.youtubePlaylist || "");
     } catch (err) {
-      alert("Error saving playlist ID");
+      alert("Error saving YouTube playlist");
       console.error(err);
     }
-  };
-
-  const returnToTickets = () => {
-    navigate("/");
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setNewPlaylistId(value);
   };
 
   return (
@@ -269,6 +262,41 @@ const ConcertExpPage: React.FC = () => {
               {loading ? "Saving..." : "Save"}
             </button>
           </div>
+
+          {/* Setlist - when editing */}
+          <section className="setlist-section">
+            <h3 className="add-playlist-title">Setlist</h3>
+            {concertDetails?.youtubePlaylist && (
+              <a
+                href={`https://www.youtube.com/playlist?list=${formatYoutubeId(concertDetails.youtubePlaylist)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="youtube-playlist-link"
+              >
+                <ExternalLink size={18} />
+                Open YouTube playlist in new tab
+              </a>
+            )}
+            <div className="add-playlist-form">
+              <div className="playlist-input-row">
+                <label>
+                  YouTube playlist URL:
+                  <input
+                    type="text"
+                    placeholder="https://www.youtube.com/playlist?list=..."
+                    value={newYoutubePlaylistId}
+                    onChange={(e) => setNewYoutubePlaylistId(e.target.value)}
+                  />
+                </label>
+                <button
+                  onClick={handleAddYoutubePlaylist}
+                  disabled={!newYoutubePlaylistId.trim()}
+                >
+                  {concertDetails?.youtubePlaylist ? "Update" : "Add"} playlist
+                </button>
+              </div>
+            </div>
+          </section>
         </>
       ) : media.length === 0 && !note?.content ? (
         <button
@@ -307,22 +335,24 @@ const ConcertExpPage: React.FC = () => {
               </pre>
             </div>
           </div>
+
+          {/* Setlist - when viewing */}
+          {concertDetails?.youtubePlaylist && (
+            <section className="setlist-section">
+              <h3 className="add-playlist-title">Setlist</h3>
+              <a
+                href={`https://www.youtube.com/playlist?list=${formatYoutubeId(concertDetails.youtubePlaylist)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="youtube-playlist-link"
+              >
+                <ExternalLink size={18} />
+                Open YouTube playlist in new tab
+              </a>
+            </section>
+          )}
         </>
       )}
-
-      {/* SETLIST PLAYER */}
-      {tokens &&
-        (concertDetails?.setlist ? (
-          <SpotifyPlayer
-            accessToken={tokens.access_token}
-            playlistId={concertDetails.setlist}
-          />
-        ) : (
-          <div>
-            <input type="text" onChange={handleInputChange} />
-            <button onClick={handleAddPlaylist}> add playlist</button>
-          </div>
-        ))}
     </div>
   );
 };
