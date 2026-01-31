@@ -4,34 +4,33 @@ const path = require('path');
 const fs = require('fs');
 const ConcertExperience = require('../models/ConcertExperience');
 const ConcertMemory = require('../models/ConcertMemory');
-const ConcertTicket = require('../models/ConcertTicket')
-const router = express.Router(); 
+const ConcertTicket = require('../models/ConcertTicket');
+const { uploadToS3, deleteFromS3, isS3Enabled } = require('../utils/s3');
+const router = express.Router();
 
-// Ensure upload folders exist
-const ensureUploadDirs = () => {
-  const photoDir = path.join(__dirname, '../uploads/photos');
-  const videoDir = path.join(__dirname, '../uploads/videos');
-  if (!fs.existsSync(photoDir)) fs.mkdirSync(photoDir, { recursive: true });
-  if (!fs.existsSync(videoDir)) fs.mkdirSync(videoDir, { recursive: true });
-};
-ensureUploadDirs();
-
-// Storage config
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const isVideo = file.mimetype.startsWith('video/');
-    const uploadPath = isVideo ? 'uploads/videos' : 'uploads/photos';
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    const ext = path.extname(file.originalname);
-    const name = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
-    cb(null, name);
-  }
-});
+// Storage config: use memory storage for S3, disk storage for local fallback
+const useS3 = isS3Enabled();
+const storage = useS3
+  ? multer.memoryStorage()
+  : (() => {
+      const photoDir = path.join(__dirname, '../uploads/photos');
+      const videoDir = path.join(__dirname, '../uploads/videos');
+      if (!fs.existsSync(photoDir)) fs.mkdirSync(photoDir, { recursive: true });
+      if (!fs.existsSync(videoDir)) fs.mkdirSync(videoDir, { recursive: true });
+      return multer.diskStorage({
+        destination: (req, file, cb) => {
+          const isVideo = file.mimetype.startsWith('video/');
+          cb(null, isVideo ? 'uploads/videos' : 'uploads/photos');
+        },
+        filename: (req, file, cb) => {
+          const ext = path.extname(file.originalname);
+          cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
+        },
+      });
+    })();
 
 const upload = multer({
-  storage: storage,
+  storage,
   limits: {
     fileSize: 500 * 1024 * 1024 // 500MB per file
   },
@@ -44,7 +43,7 @@ const upload = multer({
 
 router.post('/:ticketId', upload.array('files', 10), async (req, res) => {
   const ticketId = req.params.ticketId;
-  console.log('adding memory to ticket', ticketId)
+  console.log('adding memory to ticket', ticketId);
 
   try {
     const experience = await ConcertExperience.findOne({ concertTicket: ticketId });
@@ -57,19 +56,28 @@ router.post('/:ticketId', upload.array('files', 10), async (req, res) => {
         ? 'video'
         : file.mimetype.startsWith('image/')
         ? 'photo'
-        : 'note'; // fallback
+        : 'note';
+
+      let content;
+      if (useS3) {
+        const ext = path.extname(file.originalname) || (type === 'video' ? '.mp4' : '.jpg');
+        const key = `memories/${ticketId}/${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+        content = await uploadToS3(file.buffer, key, file.mimetype);
+      } else {
+        content = `/uploads/${type === 'video' ? 'videos' : 'photos'}/${file.filename}`;
+      }
 
       const memory = new ConcertMemory({
         experience: experience._id,
         type,
-        content: `/uploads/${type === 'video' ? 'videos' : 'photos'}/${file.filename}`,
-        mimeType: file.mimetype
+        content,
+        mimeType: file.mimetype,
       });
 
       await memory.save();
       experience.memories.push(memory._id);
       memories.push(memory);
-      console.log(memory)
+      console.log(memory);
     }
 
     const note = req.body.note;
@@ -151,11 +159,15 @@ router.delete('/:ticketID/:memoryID', async (req, res) => {
     if (!memory) return res.status(404).json({error: 'memory not found'})
     
     if (memory.type !== 'note' && memory.content) {
-      const filePath = path.join(__dirname,'..', memory.content);
-      fs.unlink(filePath, (err) => {
-        if (err) console.warn('failed to delete file', filePath)
-        else console.log('Deleted file:', filePath);
-      });
+      if (memory.content.startsWith('http')) {
+        await deleteFromS3(memory.content);
+      } else {
+        const filePath = path.join(__dirname, '..', memory.content);
+        fs.unlink(filePath, (err) => {
+          if (err) console.warn('failed to delete file', filePath);
+          else console.log('Deleted file:', filePath);
+        });
+      }
     } 
 
     exp.memories = exp.memories.filter(id => id.toString() !== memoryID);

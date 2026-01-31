@@ -18,7 +18,7 @@ body {
   column-gap: 20px;
 }
 
-#journal:hover, #calendar:hover {
+#journal:hover, #calendar:hover, #account:hover {
   cursor: pointer;
   transform: scale(1.1);
   transition: 0.3s;

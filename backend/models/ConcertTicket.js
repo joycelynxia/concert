@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 
 const ConcertTicketSchema = new mongoose.Schema(
   {
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     artist: { type: String, required: true },
     tour: { type: String },
     date: { type: Date, required: true },

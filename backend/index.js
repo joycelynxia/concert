@@ -5,7 +5,6 @@ const path = require('path');
 const concertRoutes = require('./routes/concert')
 const uploadRoutes = require('./routes/upload')
 const authRoutes = require('./routes/auth')
-const eventWatcherRoutes = require('./routes/eventWatcher')
 require('dotenv').config();
 
 const app = express();
@@ -21,7 +20,6 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/concerts', concertRoutes)
 app.use('/api/upload', uploadRoutes)
 app.use('/api/auth', authRoutes)
-app.use('/api/eventWatcher', eventWatcherRoutes)
 
 app.get('/api/test', (req, res) => {
     res.json({ message: 'Backend connected successfully!' });

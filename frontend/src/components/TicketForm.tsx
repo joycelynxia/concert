@@ -58,11 +58,13 @@ const TicketForm: React.FC<TicketFormProps> = ({
         : `http://127.0.0.1:4000/api/concerts/ticket`;
 
       const method = isEditing ? "PUT" : "POST";
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      const token = localStorage.getItem("token");
+      if (token) headers.Authorization = `Bearer ${token}`;
+
       const response = await fetch(url, {
         method: method,
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify(concertDetails),
       });
 

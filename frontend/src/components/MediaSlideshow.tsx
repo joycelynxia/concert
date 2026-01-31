@@ -18,6 +18,8 @@ const SimpleSlideshow: React.FC<SlideshowProps> = ({ media }) => {
   if (total === 0) return <p>No media available.</p>;
 
   const currentItem = mediaItems[current];
+  const apiBase = process.env.REACT_APP_API_URL || 'http://127.0.0.1:4000';
+  const src = currentItem.content.startsWith('http') ? currentItem.content : `${apiBase}${currentItem.content}`;
 
   return (
     <div className="slideshow-container">
@@ -26,13 +28,13 @@ const SimpleSlideshow: React.FC<SlideshowProps> = ({ media }) => {
       <div className="media-wrapper">
         {currentItem.type === 'photo' ? (
           <img
-            src={`http://127.0.0.1:4000${currentItem.content}`}
+            src={src}
             alt="Concert"
             className="slideshow-media"
           />
         ) : (
           <video
-            src={`http://127.0.0.1:4000${currentItem.content}`}
+            src={src}
             controls
             className="slideshow-media"
           />

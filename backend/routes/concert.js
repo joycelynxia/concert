@@ -1,4 +1,5 @@
 const express = require("express");
+const jwt = require("jsonwebtoken");
 const router = express.Router();
 const multer = require("multer");
 
@@ -32,6 +33,20 @@ const formatYoutubePlaylist = (input) => {
   return trimmed;
 };
 
+const getUserIdFromRequest = (req) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) return null;
+  try {
+    const decoded = jwt.verify(
+      authHeader.replace("Bearer ", ""),
+      process.env.JWT_SECRET || "concert-journal-secret"
+    );
+    return decoded.userId || null;
+  } catch {
+    return null;
+  }
+};
+
 router.post("/ticket", async (req, res) => {
   console.log("POST /ticket hit");
   console.log(req.body); // 👀 log incoming data
@@ -49,7 +64,9 @@ router.post("/ticket", async (req, res) => {
       genre,
     } = req.body;
 
+    const userId = getUserIdFromRequest(req);
     const newTicket = new ConcertTicket({
+      ...(userId && { user: userId }),
       artist,
       tour,
       date,
@@ -64,12 +81,12 @@ router.post("/ticket", async (req, res) => {
 
     await newTicket.save();
     console.log(newTicket._id); // ✅ Access the ID here
-    // Automatically create a blank ConcertExperience (you can later let the user edit it)
+    // Automatically create a blank ConcertExperience belonging to the user
     const newExperience = new ConcertExperience({
+      ...(userId && { userId }),
       concertTicket: newTicket._id,
       rating: null, // Optional
       memories: [],
-      // Omit userId/sharedWith if local-only
     });
 
     await newExperience.save();
@@ -88,6 +105,11 @@ router.put("/ticket/:id", async (req, res) => {
   try {
     const ticket = await ConcertTicket.findById(req.params.id);
     if (!ticket) return res.status(404).json({ message: "Ticket not found" });
+
+    const userId = getUserIdFromRequest(req);
+    if (userId && !ticket.user) {
+      ticket.user = userId;
+    }
 
     const {
       artist,
