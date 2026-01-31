@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { ConcertDetails } from "types/types";
 import "../styling/TicketForm.css";
+
 interface TicketFormProps {
   onSave: (concertDetails: ConcertDetails) => void;
   onCancel?: () => void;
   onDelete: (ticketId: string) => void;
   isEditing: boolean;
   initialData?: ConcertDetails;
+  existingVenues?: string[];
+  existingGenres?: string[];
 }
 
 const TicketForm: React.FC<TicketFormProps> = ({
@@ -15,6 +18,8 @@ const TicketForm: React.FC<TicketFormProps> = ({
   onDelete,
   isEditing,
   initialData,
+  existingVenues = [],
+  existingGenres = [],
 }) => {
   const [concertDetails, setConcertDetails] = useState<ConcertDetails>({
     artist: "",
@@ -23,6 +28,7 @@ const TicketForm: React.FC<TicketFormProps> = ({
     venue: "",
     seatInfo: "",
     section: "",
+    setlist: "",
     youtubePlaylist: "",
     priceCents: 0,
     genre: "",
@@ -83,11 +89,6 @@ const TicketForm: React.FC<TicketFormProps> = ({
     return date.toISOString().slice(0, 10);
   };
 
-  const formatYoutubePlaylist = (url: string) => {
-    const match = url.match(/[?&]list=([a-zA-Z0-9_-]+)/);
-    return match ? match[1] : url;
-  };
-
   return (
     <div className="form-overlay">
       <div className="form-container">
@@ -130,7 +131,14 @@ const TicketForm: React.FC<TicketFormProps> = ({
               name="venue"
               value={concertDetails.venue}
               onChange={handleInputChange}
+              list="venue-datalist"
+              placeholder={existingVenues.length > 0 ? "Choose or type a new venue" : "e.g. Madison Square Garden"}
             />
+            <datalist id="venue-datalist">
+              {existingVenues.map((v) => (
+                <option key={v} value={v} />
+              ))}
+            </datalist>
           </label>
           <label>
             Seat Info:
@@ -151,12 +159,34 @@ const TicketForm: React.FC<TicketFormProps> = ({
             />
           </label>
           <label>
+            Spotify playlist URL:
+            <input
+              type="text"
+              name="setlist"
+              placeholder="https://open.spotify.com/playlist/..."
+              value={
+                concertDetails.setlist
+                  ? concertDetails.setlist.includes("spotify.com")
+                    ? concertDetails.setlist
+                    : `https://open.spotify.com/playlist/${concertDetails.setlist}`
+                  : ""
+              }
+              onChange={handleInputChange}
+            />
+          </label>
+          <label>
             YouTube playlist URL:
             <input
               type="text"
               name="youtubePlaylist"
               placeholder="https://www.youtube.com/playlist?list=..."
-              value={formatYoutubePlaylist(concertDetails.youtubePlaylist || "")}
+              value={
+                concertDetails.youtubePlaylist
+                  ? concertDetails.youtubePlaylist.includes("youtube.com")
+                    ? concertDetails.youtubePlaylist
+                    : `https://www.youtube.com/playlist?list=${concertDetails.youtubePlaylist}`
+                  : ""
+              }
               onChange={handleInputChange}
             />
           </label>
@@ -167,7 +197,14 @@ const TicketForm: React.FC<TicketFormProps> = ({
               name="genre"
               value={concertDetails.genre}
               onChange={handleInputChange}
+              list="genre-datalist"
+              placeholder={existingGenres.length > 0 ? "Choose or type a new genre" : "e.g. Rock, Pop"}
             />
+            <datalist id="genre-datalist">
+              {existingGenres.map((g) => (
+                <option key={g} value={g} />
+              ))}
+            </datalist>
           </label>
           <label>
             Price:

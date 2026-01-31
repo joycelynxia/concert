@@ -12,6 +12,12 @@ const formatYoutubeId = (input: string): string => {
   return match ? match[1] : trimmed;
 };
 
+const formatSpotifyId = (input: string): string => {
+  const trimmed = input.trim();
+  const match = trimmed.match(/spotify\.com\/playlist\/([a-zA-Z0-9]+)/);
+  return match ? match[1] : trimmed;
+};
+
 const ConcertExpPage: React.FC = () => {
   const { id } = useParams();
   const [memories, setMemories] = useState<ConcertMemory[]>([]);
@@ -23,6 +29,7 @@ const ConcertExpPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [selectedMediaIds, setSelectedMediaIds] = useState<string[]>([]);
   const [noteID, setNoteID] = useState("");
+  const [newSpotifyPlaylistId, setNewSpotifyPlaylistId] = useState("");
   const [newYoutubePlaylistId, setNewYoutubePlaylistId] = useState("");
   useEffect(() => {
     if (!id) return;
@@ -38,6 +45,7 @@ const ConcertExpPage: React.FC = () => {
       .then((res) => res.json())
       .then((data) => {
         setConcertDetails(data);
+        setNewSpotifyPlaylistId(data?.setlist || "");
         setNewYoutubePlaylistId(data?.youtubePlaylist || "");
       })
       .catch(() => null);
@@ -137,6 +145,29 @@ const ConcertExpPage: React.FC = () => {
     setSelectedMediaIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
+  };
+
+  const handleAddSpotifyPlaylist = async () => {
+    if (!id || !newSpotifyPlaylistId) return;
+    try {
+      const res = await fetch(
+        `http://127.0.0.1:4000/api/concerts/${id}/playlist`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ setlist: newSpotifyPlaylistId }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to save Spotify playlist");
+      setConcertDetails((prev) =>
+        prev ? { ...prev, setlist: data.setlist } : prev
+      );
+      setNewSpotifyPlaylistId(data.setlist || "");
+    } catch (err) {
+      alert("Error saving Spotify playlist");
+      console.error(err);
+    }
   };
 
   const handleAddYoutubePlaylist = async () => {
@@ -266,18 +297,48 @@ const ConcertExpPage: React.FC = () => {
           {/* Setlist - when editing */}
           <section className="setlist-section">
             <h3 className="add-playlist-title">Setlist</h3>
-            {concertDetails?.youtubePlaylist && (
-              <a
-                href={`https://www.youtube.com/playlist?list=${formatYoutubeId(concertDetails.youtubePlaylist)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="youtube-playlist-link"
-              >
-                <ExternalLink size={18} />
-                Open YouTube playlist in new tab
-              </a>
-            )}
+            <div className="playlist-links">
+              {concertDetails?.setlist && (
+                <a
+                  href={`https://open.spotify.com/playlist/${formatSpotifyId(concertDetails.setlist)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="spotify-playlist-link"
+                >
+                  <ExternalLink size={18} />
+                  Open in Spotify
+                </a>
+              )}
+              {concertDetails?.youtubePlaylist && (
+                <a
+                  href={`https://www.youtube.com/playlist?list=${formatYoutubeId(concertDetails.youtubePlaylist)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="youtube-playlist-link"
+                >
+                  <ExternalLink size={18} />
+                  Open YouTube playlist in new tab
+                </a>
+              )}
+            </div>
             <div className="add-playlist-form">
+              <div className="playlist-input-row">
+                <label>
+                  Spotify playlist URL:
+                  <input
+                    type="text"
+                    placeholder="https://open.spotify.com/playlist/..."
+                    value={newSpotifyPlaylistId}
+                    onChange={(e) => setNewSpotifyPlaylistId(e.target.value)}
+                  />
+                </label>
+                <button
+                  onClick={handleAddSpotifyPlaylist}
+                  disabled={!newSpotifyPlaylistId.trim()}
+                >
+                  {concertDetails?.setlist ? "Update" : "Add"} Spotify
+                </button>
+              </div>
               <div className="playlist-input-row">
                 <label>
                   YouTube playlist URL:
@@ -292,7 +353,7 @@ const ConcertExpPage: React.FC = () => {
                   onClick={handleAddYoutubePlaylist}
                   disabled={!newYoutubePlaylistId.trim()}
                 >
-                  {concertDetails?.youtubePlaylist ? "Update" : "Add"} playlist
+                  {concertDetails?.youtubePlaylist ? "Update" : "Add"} YouTube
                 </button>
               </div>
             </div>
@@ -337,18 +398,33 @@ const ConcertExpPage: React.FC = () => {
           </div>
 
           {/* Setlist - when viewing */}
-          {concertDetails?.youtubePlaylist && (
+          {(concertDetails?.setlist || concertDetails?.youtubePlaylist) && (
             <section className="setlist-section">
               <h3 className="add-playlist-title">Setlist</h3>
-              <a
-                href={`https://www.youtube.com/playlist?list=${formatYoutubeId(concertDetails.youtubePlaylist)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="youtube-playlist-link"
-              >
-                <ExternalLink size={18} />
-                Open YouTube playlist in new tab
-              </a>
+              <div className="playlist-links">
+                {concertDetails?.setlist && (
+                  <a
+                    href={`https://open.spotify.com/playlist/${formatSpotifyId(concertDetails.setlist)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="spotify-playlist-link"
+                  >
+                    <ExternalLink size={18} />
+                    Open in Spotify
+                  </a>
+                )}
+                {concertDetails?.youtubePlaylist && (
+                  <a
+                    href={`https://www.youtube.com/playlist?list=${formatYoutubeId(concertDetails.youtubePlaylist)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="youtube-playlist-link"
+                  >
+                    <ExternalLink size={18} />
+                    Open YouTube playlist in new tab
+                  </a>
+                )}
+              </div>
             </section>
           )}
         </>

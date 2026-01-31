@@ -9,6 +9,8 @@ import TicketForm from "./TicketForm";
 interface ConcertTicketProps extends ConcertDetails {
   onDelete: (id: string) => void;
   onSave: (ticket: ConcertDetails) => void;
+  existingVenues?: string[];
+  existingGenres?: string[];
 }
 const ConcertTicket: React.FC<ConcertTicketProps> = (props) => {
   const {
@@ -23,6 +25,8 @@ const ConcertTicket: React.FC<ConcertTicketProps> = (props) => {
     _id,
     onDelete,
     onSave,
+    existingVenues = [],
+    existingGenres = [],
   } = props;
 
   const barcodeRef = useRef<SVGSVGElement>(null);
@@ -46,7 +50,7 @@ const ConcertTicket: React.FC<ConcertTicketProps> = (props) => {
 
   const formatted = format(new Date(date), "EEE MMM d yyyy").toUpperCase();
 
-  const handleViewButton = () => {
+  const handleViewDetails = () => {
     navigate(`/concert/${_id}`);
   };
 
@@ -67,12 +71,14 @@ const renderEditForm = () =>
         onCancel={closeEditForm}
         isEditing={true}
         initialData={props}
+        existingVenues={existingVenues}
+        existingGenres={existingGenres}
       />
     ) : null;
   return (
     <>
    {renderEditForm()}
-      <div className="ticket">
+      <div className="ticket" onClick={handleViewDetails} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleViewDetails(); } }}>
         <div className="ticket-header">
           <div className="ticket-venue">{venue}</div>
           <div className="ticket-artist">
@@ -104,10 +110,9 @@ const renderEditForm = () =>
             <div className="num-photos"></div>
             <div className="has-entry"></div>
           </div>
-          <div className="other-buttons">
-            <button onClick={() => setIsEditing(true)}>edit</button>
-            <button>share</button>
-            <button onClick={handleViewButton}>view details</button>
+          <div className="other-buttons" onClick={(e) => e.stopPropagation()}>
+            <button type="button" onClick={() => setIsEditing(true)}>edit</button>
+            <button type="button">share</button>
           </div>
         </div>
       </div>

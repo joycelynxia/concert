@@ -14,6 +14,15 @@ const upload = multer({
   },
 });
 
+const formatSpotifyPlaylist = (input) => {
+  if (!input || typeof input !== "string") return null;
+  const trimmed = input.trim();
+  const playlistMatch = trimmed.match(/spotify\.com\/playlist\/([a-zA-Z0-9]+)/);
+  if (playlistMatch) return playlistMatch[1];
+  if (/^[a-zA-Z0-9]+$/.test(trimmed)) return trimmed;
+  return null;
+};
+
 const formatYoutubePlaylist = (input) => {
   if (!input || typeof input !== "string") return input;
   const trimmed = input.trim();
@@ -34,6 +43,7 @@ router.post("/ticket", async (req, res) => {
       venue,
       seatInfo,
       section,
+      setlist,
       youtubePlaylist,
       priceCents,
       genre,
@@ -46,6 +56,7 @@ router.post("/ticket", async (req, res) => {
       venue,
       seatInfo,
       section,
+      setlist: formatSpotifyPlaylist(setlist) || undefined,
       youtubePlaylist: formatYoutubePlaylist(youtubePlaylist) || undefined,
       priceCents,
       genre,
@@ -85,6 +96,7 @@ router.put("/ticket/:id", async (req, res) => {
       venue,
       seatInfo,
       section,
+      setlist,
       youtubePlaylist,
       priceCents,
       genre,
@@ -95,6 +107,10 @@ router.put("/ticket/:id", async (req, res) => {
     ticket.venue = updateField(ticket.venue, venue);
     ticket.seatInfo = updateField(ticket.seatInfo, seatInfo);
     ticket.section = updateField(ticket.section, section);
+    ticket.setlist = updateField(
+      ticket.setlist,
+      setlist ? formatSpotifyPlaylist(setlist) : undefined
+    );
     ticket.youtubePlaylist = updateField(
       ticket.youtubePlaylist,
       youtubePlaylist ? formatYoutubePlaylist(youtubePlaylist) : undefined
@@ -188,7 +204,23 @@ router.get("/experience/:id", async (req, res) => {
   }
 });
 
-// PUT /api/concerts/:id/playlist
+// PUT /api/concerts/:id/youtube-playlist
+router.put("/:id/youtube-playlist", async (req, res) => {
+  const { id } = req.params;
+  const { youtubePlaylist } = req.body;
+  const parsedId = formatYoutubePlaylist(youtubePlaylist);
+  try {
+    const ticket = await ConcertTicket.findById(id);
+    if (!ticket) return res.status(404).json({ message: "Ticket not found" });
+    ticket.youtubePlaylist = parsedId || undefined;
+    await ticket.save();
+    res.json({ youtubePlaylist: ticket.youtubePlaylist });
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// PUT /api/concerts/:id/playlist (Spotify)
 router.put("/:id/playlist", async (req, res) => {
   const { id } = req.params;
   const { setlist } = req.body;
@@ -212,7 +244,7 @@ router.put("/:id/playlist", async (req, res) => {
 
     ticket.setlist = parsedId;
     await ticket.save();
-    res.json(ticket);
+    res.json({ setlist: ticket.setlist });
   } catch (err) {
     res.status(500).json({ error: "Server error" });
   }

@@ -5,6 +5,7 @@ export interface ConcertDetails {
     venue?: string;
     seatInfo?: string;
     section?: string;
+    setlist?: string;
     youtubePlaylist?: string;
     priceCents?: number;
     genre?: string;

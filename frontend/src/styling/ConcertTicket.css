@@ -8,7 +8,7 @@ body {
   grid-template-rows: 1fr 2fr;
   height: 300px;
   position: relative;
-  cursor: default;
+  cursor: pointer;
   margin-bottom: 10px;
 }
 
@@ -58,7 +58,7 @@ body {
 
 .other-buttons {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr ;
   column-gap: 10px;
   margin-top: 10px;
 }

@@ -8,8 +8,8 @@ const Navigation: React.FC = () => {
     navigate("/");
   };
 
-  const handleTracker = () => {
-    navigate("/tracker");
+  const handleCalendar = () => {
+    navigate("/calendar");
   };
 
   return (
@@ -17,7 +17,7 @@ const Navigation: React.FC = () => {
       <div className="logo">ENCORE</div>
       <div className="pages">
         <div id="journal" onClick={handleJournal}>journal entries</div>
-        <div id="tracker" onClick={handleTracker}>concert tracker</div>
+        <div id="calendar" onClick={handleCalendar}>calendar</div>
       </div>
     </div>
   );
