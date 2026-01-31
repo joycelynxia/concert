@@ -37,7 +37,7 @@ export const SpotifyCallback: React.FC<SpotifyCallbackProps> = ({
           expires_in: 3600,
         };
 
-        persistTokens(tokens);
+        persistTokens(tokens, onTokensReceived);
         onTokensReceived(tokens);
         navigate("/", { replace: true });
         return;
@@ -68,7 +68,7 @@ export const SpotifyCallback: React.FC<SpotifyCallbackProps> = ({
           expires_in: data.expires_in || 3600,
         };
 
-        persistTokens(tokens);
+        persistTokens(tokens, onTokensReceived);
         onTokensReceived(tokens);
         navigate("/", { replace: true });
       } catch (err: any) {
@@ -84,17 +84,17 @@ export const SpotifyCallback: React.FC<SpotifyCallbackProps> = ({
 };
 
 // --- 4. Optional: save to localStorage for persistence ---
-function persistTokens(tokens: Tokens) {
+function persistTokens(tokens: Tokens, onTokenUpdate?: (tokens: Tokens) => void) {
   localStorage.setItem("spotify_tokens", JSON.stringify({
     ...tokens,
     expires_at: Date.now() + tokens.expires_in * 1000,
   }));
-  scheduleTokenRefresh(tokens);
+  scheduleTokenRefresh(tokens, onTokenUpdate);
 }
 
 // --- 5. Optional: auto-refresh token before it expires ---
-function scheduleTokenRefresh(tokens: Tokens) {
-  const refreshDelay = (tokens.expires_in - 300) * 1000; // 5 minutes before expiry
+function scheduleTokenRefresh(tokens: Tokens, onTokenUpdate?: (tokens: Tokens) => void) {
+  const refreshDelay = Math.max((tokens.expires_in - 300) * 1000, 0); // 5 min before expiry
 
   setTimeout(async () => {
     try {
@@ -111,7 +111,8 @@ function scheduleTokenRefresh(tokens: Tokens) {
         expires_in: newTokens.expires_in || 3600,
       };
 
-      persistTokens(updatedTokens);
+      persistTokens(updatedTokens, onTokenUpdate);
+      onTokenUpdate?.(updatedTokens); // Update React context so Player uses fresh token
     } catch (err) {
       console.error("Failed to refresh token:", err);
     }

@@ -1,0 +1,120 @@
+.youtube-setlist-player {
+  padding: 1rem;
+  margin-top: 1rem;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.youtube-player-header {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.youtube-toggle-btn {
+  background-color: #ff0000;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  padding: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.youtube-toggle-btn:hover {
+  background-color: #cc0000;
+  transform: scale(1.1);
+}
+
+.youtube-player-title {
+  margin: 0;
+  padding: 0.5rem 0;
+  color: #fff;
+  font-size: 1.1rem;
+}
+
+.youtube-player-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.youtube-embed-wrapper {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #000;
+}
+
+.youtube-embed-wrapper iframe,
+.youtube-embed-inner iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.youtube-embed-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.youtube-embed-fallback {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.youtube-embed-fallback p {
+  margin: 0 0 1rem 0;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.youtube-open-btn {
+  display: inline-flex;
+  padding: 0.6rem 1.2rem;
+  background: #ff0000;
+  border-radius: 8px;
+  font-weight: 600;
+  color: white !important;
+}
+
+.youtube-open-btn:hover {
+  background: #cc0000;
+}
+
+.youtube-fallback-note {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.youtube-open-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #7dd3fc;
+  text-decoration: none;
+}
+
+.youtube-open-link:hover {
+  text-decoration: underline;
+  color: #bae6fd;
+}

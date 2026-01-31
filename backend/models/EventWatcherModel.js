@@ -3,9 +3,11 @@ const mongoose = require("mongoose");
 const EventWatcherSchema = new mongoose.Schema({
   email: { type: String, required: true },
   eventName: { type: String, required: true },
+  platform: { type: String, enum: ["SeatGeek", "Ticketmaster"], required: true },
   preferredSections: [
     {
       sectionName: { type: String, required: true },
+      lastCheckedPrice: { type: Number },
       lastNotifiedPrice: { type: Number },
     },
   ],

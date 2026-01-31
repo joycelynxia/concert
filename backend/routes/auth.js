@@ -15,6 +15,8 @@ const scopes = [
   "streaming",
   "user-read-private",
   "user-read-email",
+  "playlist-read-private",
+  "playlist-read-collaborative",
 ];
 
 router.get("/login", (req, res) => {

@@ -20,6 +20,7 @@ const EventForm: React.FC<EventFormProps> = ({
   const [eventDetails, setEventDetails] = useState<EventWatcher>({
     email: "",
     eventName: "",
+    platform: "SeatGeek",
     eventUrl: "",
     preferredSections: [],
     maxPricePerTicket: 0,
@@ -34,11 +35,23 @@ const EventForm: React.FC<EventFormProps> = ({
     }
   }, [isEditing, initialData]);
 
+useEffect(() => {
+  console.log("eventDetails updated:", eventDetails);
+}, [eventDetails]);
+
   // Handle form input changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setEventDetails({ ...eventDetails, [name]: value });
-  };
+const handleInputChange = (
+  e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+) => {
+  const { name, value } = e.target;
+  setEventDetails((prev) => ({
+    ...prev,
+    [name]: name === "platform"
+      ? (value as "SeatGeek" | "TicketMaster")
+      : value,
+  }));
+};
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,6 +87,17 @@ const EventForm: React.FC<EventFormProps> = ({
     } catch (error) {
       console.error("network error:", error);
     }
+    setEventDetails({
+    email: "",
+    eventName: "",
+    platform: "SeatGeek",
+    eventUrl: "",
+    preferredSections: [],
+    maxPricePerTicket: 0,
+    numTickets: 0,
+    createdAt: new Date(),
+    _id: "",
+  })
   };
   return (
     <div className="form-overlay">
@@ -99,6 +123,17 @@ const EventForm: React.FC<EventFormProps> = ({
               onChange={handleInputChange}
               required
             />
+          </label>
+          <label>
+            Ticket Platform:
+            <select
+              name="platform"
+              value={eventDetails.platform}
+              onChange={handleInputChange}
+            >
+              <option value="SeatGeek">SeatGeek</option>
+              <option value="TicketMaster">TicketMaster</option>
+            </select>
           </label>
           <label>
             Event Url:
@@ -164,8 +199,8 @@ const EventForm: React.FC<EventFormProps> = ({
               </button>
             )} */}
             <button type="button" onClick={onCancel}>
-                cancel
-              </button>
+              cancel
+            </button>
             <button type="submit">{isEditing ? "save" : "add"}</button>
           </div>
         </form>

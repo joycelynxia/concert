@@ -165,12 +165,17 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
         );
 
         const data = await res.json();
-        const items = data.tracks.items.map((item: any) => ({
-          name: item.track.name,
-          uri: item.track.uri,
-          artists: item.track.artists.map((a: any) => a.name).join(", "),
-          albumImage: item.track.album.images[0]?.url,
-        }));
+        if (!res.ok) {
+          throw new Error(data.error?.message || "Failed to fetch playlist");
+        }
+        const items = (data.tracks?.items || [])
+          .filter((item: any) => item?.track != null)
+          .map((item: any) => ({
+            name: item.track.name,
+            uri: item.track.uri,
+            artists: item.track.artists?.map((a: any) => a.name).join(", ") ?? "",
+            albumImage: item.track.album?.images?.[0]?.url,
+          }));
 
         setTracks(items);
       } catch (err) {
@@ -195,12 +200,36 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
     return () => clearInterval(intervalRef.current);
   }, [player]);
 
-  const playTrack = async (trackUri: string) => {
-    if (!deviceId) return;
-
-    const trackUris = tracks.map((t) => t.uri);
+  const transferPlayback = async (): Promise<boolean> => {
+    if (!deviceId) return false;
     try {
-      await fetch(
+      const res = await fetch("https://api.spotify.com/v1/me/player", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          device_ids: [deviceId],
+          play: false,
+        }),
+      });
+      return res.ok || res.status === 204;
+    } catch (err) {
+      console.error("Error transferring playback:", err);
+      return false;
+    }
+  };
+
+  const playTrack = async (trackUri: string) => {
+    if (!deviceId || tracks.length === 0) return;
+
+    try {
+      (player as any)?.activateElement?.();
+      await transferPlayback();
+      await new Promise((r) => setTimeout(r, 300));
+
+      const res = await fetch(
         `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
         {
           method: "PUT",
@@ -209,13 +238,46 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            uris: trackUris,
+            uris: tracks.map((t) => t.uri),
             offset: { uri: trackUri },
           }),
         }
       );
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.error("Play API error:", res.status, err);
+      }
     } catch (err) {
       console.error("Error playing track:", err);
+    }
+  };
+
+  const startPlaylist = async () => {
+    if (!deviceId || tracks.length === 0) return;
+    try {
+      (player as any)?.activateElement?.();
+      await transferPlayback();
+      await new Promise((r) => setTimeout(r, 300));
+      const res = await fetch(
+        `https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            uris: tracks.map((t) => t.uri),
+          }),
+        }
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.error("Play API error:", res.status, err);
+      }
+    } catch (err) {
+      console.error("Error starting playlist:", err);
     }
   };
 
@@ -223,7 +285,11 @@ export const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
     if (!player) return;
 
     const state = await player.getCurrentState();
-    if (!state) return;
+
+    if (!state) {
+      await startPlaylist();
+      return;
+    }
 
     if (state.paused) {
       await player.resume();

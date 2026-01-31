@@ -142,3 +142,85 @@
   top: 30px;
   right: 15px;
 }
+
+.setlist-hint {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+/* Setlist section */
+.setlist-section {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.add-playlist-form {
+  background: #f8fafc;
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.add-playlist-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+}
+
+.playlist-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.playlist-input-row:last-child {
+  margin-bottom: 0;
+}
+
+.playlist-input-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.playlist-input-row input {
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.playlist-input-row button {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  background-color: #7caadd;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.playlist-input-row button:hover:not(:disabled) {
+  background-color: #6691c3;
+}
+
+.playlist-input-row button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spotify-login-prompt {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.spotify-login-prompt .spotify-logo {
+  cursor: pointer;
+}

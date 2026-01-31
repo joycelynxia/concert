@@ -30,6 +30,11 @@ const PriceTrackerPage: React.FC = () => {
     setIsFormVisible(!isFormVisible);
   };
 
+  const handleAdd = () => {
+    setIsEditing(false);
+    toggleForm();
+  }
+
   const handleSubmit = (eventDetails: EventWatcher) => {
     toggleForm();
     setEvents((prevEvent) => {
@@ -89,8 +94,36 @@ const PriceTrackerPage: React.FC = () => {
     }
   };
 
+  const getTrackedEvents = async () => {
+    try {
+      const res = await fetch(`http://127.0.0.1:4000/api/ticketSite/trackedEvents`,
+        {
+          method: 'GET',
+        }
+      )
+      const data = await res.json()
+      console.log(data)
+    } catch (error) {
+      console.error('unable to fetch all tracked events:', error)
+    }
+  }
+
+  const updateTrackingInfo = async (platform: string, eventUrl: string) => {
+    console.log('updating tracking info for', platform, eventUrl)
+    try {
+      const res = await fetch(`http://127.0.0.1:4000/api/ticketSite/eventByUrl?platform=${platform}&eventUrl=${eventUrl}`, {
+        method: 'GET'
+      })
+      const data = await res.json()
+      console.log(data)
+    } catch (error) {
+      console.error('unable to update tracking info')
+    }
+  }
+
   return (
     <div className="tracker-page-container">
+      <button onClick={getTrackedEvents}>get tracked events</button>
       {isFormVisible && (
         <EventForm
           onSubmit={handleSubmit}
@@ -103,7 +136,7 @@ const PriceTrackerPage: React.FC = () => {
 
       <div className="header">
         <h1 className="page-title">my events</h1>
-        <button className="add-event-button" onClick={toggleForm}>
+        <button className="add-event-button" onClick={handleAdd}>
           +
         </button>
       </div>
@@ -161,6 +194,7 @@ const PriceTrackerPage: React.FC = () => {
                       <div onClick={() => handleDelete(event._id)}>
                         <img className="icon" src="/trash-can.png" />
                       </div>
+                      <div onClick={() => updateTrackingInfo(event.platform, event.eventUrl)}>update</div>
                     </div>
                   </td>
                 </tr>

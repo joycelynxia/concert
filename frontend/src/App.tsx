@@ -9,7 +9,8 @@ import { SpotifyLogin } from './components/Spotify/SpotifyLogin';
 import { SpotifyCallback } from './components/Spotify/SpotifyCallback';
 import { SpotifyPlayer } from './components/Spotify/SpotifyPlayer';
 
-import { SpotifyProvider, useSpotify } from './context/SpotifyContext';
+import { SpotifyProvider } from './context/SpotifyContext';
+import { PlayerProvider } from './context/PlayerContext';
 import { SpotifyPlayerWrapper } from 'components/Spotify/SpotifyPlayerWrapper';
 import { SpotifyCallbackWrapper } from 'components/Spotify/SpotifyCallbackWrapper';
 import PriceTrackerPage from 'pages/PriceTrackerPage';
@@ -17,6 +18,7 @@ import PriceTrackerPage from 'pages/PriceTrackerPage';
 const App: React.FC = () => {
   return (
     <SpotifyProvider>
+      <PlayerProvider>
       <Router>
         <MainLayout>
           <Routes>
@@ -30,6 +32,7 @@ const App: React.FC = () => {
           </Routes>
         </MainLayout>
       </Router>
+      </PlayerProvider>
     </SpotifyProvider>
   );
 };

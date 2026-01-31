@@ -6,6 +6,7 @@ export interface ConcertDetails {
     seatInfo?: string;
     section?: string;
     setlist?: string;
+    youtubePlaylist?: string;
     priceCents?: number;
     genre?: string;
     _id: string;
@@ -33,4 +34,5 @@ export interface EventWatcher {
   createdAt?: Date;
   lastCheckedAt?: Date;
   lastNotifiedPrice?: number;
+  platform: 'SeatGeek' | 'TicketMaster';
 }

@@ -3,6 +3,9 @@ const router = express.Router();
 
 const EventWatcher = require("../models/EventWatcherModel");
 const User = require("../models/User");
+const { trackEvent } = require("./poller");
+const { getEventId } = require("./seatgeek");
+
 
 router.post("/event", async (req, res) => {
   console.log("creating new event tracker");
@@ -15,6 +18,7 @@ router.post("/event", async (req, res) => {
       numTickets,
       createdAt,
       eventUrl,
+      platform,
     } = req.body;
 
     // Convert string array to object array if necessary
@@ -33,17 +37,12 @@ router.post("/event", async (req, res) => {
       numTickets,
       createdAt,
       eventUrl,
+      platform,
     });
     console.log(newEventWatcher)
     await newEventWatcher.save();
 
-    // const user = await User.findById(userId);
-    // if (!user) {
-    //   return res.status(404).json({ error: "User not found" });
-    // }
-    // user.currentEventWatchers.push(newEventWatcher._id);
-    // await user.save();
-
+    trackEvent(platform, getEventId(platform, eventUrl), eventUrl)
     res.status(201).json({
       message: "new event watcher saved successfully",
       eventWatcher: newEventWatcher,
@@ -76,6 +75,7 @@ router.put("/event/:id", async (req, res) => {
       maxPricePerTicket
     );
     eventWatcher.numTickets = updateField(eventWatcher.numTickets, numTickets);
+    // eventWatcher.platform = updateField(eventWatcher.platform, platform);
 
     const updatedEvent = await eventWatcher.save();
     res.json({
