@@ -1,9 +1,9 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import TicketForm from "components/TicketForm";
 import ConcertTicket from "components/Ticket";
 import { ConcertDetails } from "types/types";
 import { useNavigate } from "react-router-dom";
-import { LayoutGrid, List, Search } from "lucide-react";
+import { LayoutGrid, List, Search, SlidersHorizontal, ChevronDown } from "lucide-react";
 import { format } from "date-fns";
 import "../styling/TicketsPage.css";
 
@@ -22,6 +22,22 @@ function TicketsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterVenue, setFilterVenue] = useState<string>("");
   const [filterGenre, setFilterGenre] = useState<string>("");
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const filterPanelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (filterPanelRef.current && !filterPanelRef.current.contains(e.target as Node)) {
+        setIsFilterOpen(false);
+        setIsSortOpen(false);
+      }
+    };
+    if (isFilterOpen || isSortOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isFilterOpen, isSortOpen]);
 
   const uniqueVenues = useMemo(() => {
     const venues = new Set(
@@ -139,8 +155,18 @@ function TicketsPage() {
   return (
     <>
       <div className="header">
-        <h1 className="page-title">my concerts</h1>
-        <div className="search-and-filters">
+        <div className="header-title-row">
+          <h1 className="page-title">my concerts</h1>
+          <button
+            type="button"
+            className="add-ticket-button"
+            onClick={onToggleForm}
+            aria-label="Add concert"
+          >
+            +
+          </button>
+        </div>
+        <div className="toolbar-row" ref={filterPanelRef}>
           <div className="search-wrapper">
             <Search size={18} className="search-icon" aria-hidden />
             <input
@@ -152,80 +178,123 @@ function TicketsPage() {
               aria-label="Search concerts by artist or venue"
             />
           </div>
-          <div className="filters-row">
-            <label className="filter-label">
-              Venue
-              <select
-                value={filterVenue}
-                onChange={(e) => setFilterVenue(e.target.value)}
-                className="filter-select"
-                aria-label="Filter by venue"
-              >
-                <option value="">All venues</option>
-                {uniqueVenues.map((v) => (
-                  <option key={v} value={v}>{v}</option>
-                ))}
-              </select>
-            </label>
-            <label className="filter-label">
-              Genre
-              <select
-                value={filterGenre}
-                onChange={(e) => setFilterGenre(e.target.value)}
-                className="filter-select"
-                aria-label="Filter by genre"
-              >
-                <option value="">All genres</option>
-                {uniqueGenres.map((g) => (
-                  <option key={g} value={g}>{g}</option>
-                ))}
-              </select>
-            </label>
-            <label className="sort-label">
-              Sort by
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as SortOption)}
-                className="sort-select"
-              >
-                <option value="date">Date</option>
-                <option value="artist">Artist</option>
-              </select>
-            </label>
+          <div className="filter-button-wrapper">
+            <button
+              type="button"
+              className={`filter-toggle-btn ${isFilterOpen ? "open" : ""} ${filterVenue || filterGenre ? "active" : ""}`}
+              onClick={() => {
+                setIsFilterOpen(!isFilterOpen);
+                setIsSortOpen(false);
+              }}
+              aria-expanded={isFilterOpen}
+              aria-haspopup="true"
+              aria-label="Filter by venue and genre"
+              title="Filter"
+            >
+              <SlidersHorizontal size={18} />
+              <span>Filter</span>
+              {(filterVenue || filterGenre) && (
+                <span className="filter-badge" aria-hidden>
+                  {(filterVenue ? 1 : 0) + (filterGenre ? 1 : 0)}
+                </span>
+              )}
+            </button>
+            {isFilterOpen && (
+              <div className="filter-dropdown" role="dialog" aria-label="Filter options">
+                <label className="filter-label">
+                  Venue
+                  <select
+                    value={filterVenue}
+                    onChange={(e) => setFilterVenue(e.target.value)}
+                    className="filter-select"
+                    aria-label="Filter by venue"
+                  >
+                    <option value="">All venues</option>
+                    {uniqueVenues.map((v) => (
+                      <option key={v} value={v}>{v}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="filter-label">
+                  Genre
+                  <select
+                    value={filterGenre}
+                    onChange={(e) => setFilterGenre(e.target.value)}
+                    className="filter-select"
+                    aria-label="Filter by genre"
+                  >
+                    <option value="">All genres</option>
+                    {uniqueGenres.map((g) => (
+                      <option key={g} value={g}>{g}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            )}
+          </div>
+          <div className="filter-button-wrapper">
+            <button
+              type="button"
+              className={`filter-toggle-btn ${isSortOpen ? "open" : ""}`}
+              onClick={() => {
+                setIsSortOpen(!isSortOpen);
+                setIsFilterOpen(false);
+              }}
+              aria-expanded={isSortOpen}
+              aria-haspopup="true"
+              aria-label="Sort by"
+              title="Sort by"
+            >
+              <ChevronDown size={18} />
+              <span>Sort by {sortBy === "date" ? "Date" : "Artist"}</span>
+            </button>
+            {isSortOpen && (
+              <div className="filter-dropdown" role="dialog" aria-label="Sort options">
+                <button
+                  type="button"
+                  className={`filter-dropdown-option ${sortBy === "date" ? "active" : ""}`}
+                  onClick={() => {
+                    setSortBy("date");
+                    setIsSortOpen(false);
+                  }}
+                >
+                  Date
+                </button>
+                <button
+                  type="button"
+                  className={`filter-dropdown-option ${sortBy === "artist" ? "active" : ""}`}
+                  onClick={() => {
+                    setSortBy("artist");
+                    setIsSortOpen(false);
+                  }}
+                >
+                  Artist
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="view-toggle" role="group" aria-label="View mode">
+            <button
+              type="button"
+              className={`view-toggle-btn ${viewMode === "grid" ? "active" : ""}`}
+              onClick={() => setViewMode("grid")}
+              aria-pressed={viewMode === "grid"}
+              title="Grid view"
+            >
+              <LayoutGrid size={20} />
+            </button>
+            <button
+              type="button"
+              className={`view-toggle-btn ${viewMode === "table" ? "active" : ""}`}
+              onClick={() => setViewMode("table")}
+              aria-pressed={viewMode === "table"}
+              title="Table view"
+            >
+              <List size={20} />
+            </button>
           </div>
         </div>
-        <div className="header-actions">
-          <div className="left-actions">
-            <div className="view-toggle" role="group" aria-label="View mode">
-              <button
-                type="button"
-                className={`view-toggle-btn ${viewMode === "grid" ? "active" : ""}`}
-                onClick={() => setViewMode("grid")}
-                aria-pressed={viewMode === "grid"}
-                title="Grid view"
-              >
-                <LayoutGrid size={20} />
-              </button>
-              <button
-                type="button"
-                className={`view-toggle-btn ${viewMode === "table" ? "active" : ""}`}
-                onClick={() => setViewMode("table")}
-                aria-pressed={viewMode === "table"}
-                title="Table view"
-              >
-                <List size={20} />
-              </button>
-            </div>
-          </div>
-
-          <div className="right-actions"><button
-            className="add-ticket-button"
-            id="add"
-            onClick={onToggleForm}
-          >
-            +
-          </button></div>
-          {(isFormVisible || editingTicketId) && (
+        {(isFormVisible || editingTicketId) && (
             <div
               className="form-overlay"
               onClick={() => {
@@ -261,8 +330,7 @@ function TicketsPage() {
                 />
               </div>
             </div>
-          )}
-        </div>
+        )}
       </div>
 
       <div className={`tickets-container ${viewMode === "table" ? "table-view" : ""}`}>
