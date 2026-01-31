@@ -297,30 +297,6 @@ const ConcertExpPage: React.FC = () => {
           {/* Setlist - when editing */}
           <section className="setlist-section">
             <h3 className="add-playlist-title">Setlist</h3>
-            <div className="playlist-links">
-              {concertDetails?.setlist && (
-                <a
-                  href={`https://open.spotify.com/playlist/${formatSpotifyId(concertDetails.setlist)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="spotify-playlist-link"
-                >
-                  <ExternalLink size={18} />
-                  Open in Spotify
-                </a>
-              )}
-              {concertDetails?.youtubePlaylist && (
-                <a
-                  href={`https://www.youtube.com/playlist?list=${formatYoutubeId(concertDetails.youtubePlaylist)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="youtube-playlist-link"
-                >
-                  <ExternalLink size={18} />
-                  Open YouTube playlist in new tab
-                </a>
-              )}
-            </div>
             <div className="add-playlist-form">
               <div className="playlist-input-row">
                 <label>

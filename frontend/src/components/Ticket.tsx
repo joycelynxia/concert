@@ -3,7 +3,7 @@ import JsBarcode from "jsbarcode";
 import "../styling/ConcertTicket.css"; // Import the CSS for styling
 import { ConcertDetails } from "types/types";
 import { format } from "date-fns";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import TicketForm from "./TicketForm";
 
 interface ConcertTicketProps extends ConcertDetails {
@@ -32,7 +32,6 @@ const ConcertTicket: React.FC<ConcertTicketProps> = (props) => {
   const barcodeRef = useRef<SVGSVGElement>(null);
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
-  const ticketForForm = { ...props };
 
   useEffect(() => {
     if (barcodeRef.current) {
@@ -54,7 +53,6 @@ const ConcertTicket: React.FC<ConcertTicketProps> = (props) => {
     navigate(`/concert/${_id}`);
   };
 
-  const openEditForm = () => setIsEditing(true);
   const closeEditForm = () => setIsEditing(false);
 
 const renderEditForm = () =>

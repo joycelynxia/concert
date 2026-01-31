@@ -14,8 +14,7 @@ function TicketsPage() {
   const navigate = useNavigate();
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [tickets, setTickets] = useState<ConcertDetails[]>([]);
-  const [error, setError] = useState(null);
-  const [edit, setEdit] = useState(false);
+  // const [error, setError] = useState(null);
   const [sortBy, setSortBy] = useState<SortOption>("date");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [editingTicketId, setEditingTicketId] = useState<string | null>(null);
@@ -87,7 +86,7 @@ function TicketsPage() {
         }
       })
       .catch((error) => {
-        setError(error);
+        // setError(error);
         console.log("error: failed to fetch all tickets", error);
       });
   }, []);
