@@ -6,10 +6,20 @@ import { API_BASE } from "../config/api";
 import "../styling/CalendarPage.css";
 import { format } from "date-fns";
 import { ConcertDetails } from "types/types";
-import { getCurrentUserId } from "utils/userUtils";
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
+
+function getCurrentUserId(): string | null {
+  try {
+    const u = localStorage.getItem("user");
+    if (!u) return null;
+    const parsed = JSON.parse(u) as { id?: string };
+    return parsed?.id ?? null;
+  } catch {
+    return null;
+  }
+}
 
 const now = new Date();
 now.setHours(0, 0, 0, 0);

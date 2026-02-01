@@ -6,8 +6,17 @@ import { API_BASE } from "../config/api";
 import "../styling/ConcertExp.css";
 import Linkify from "react-linkify";
 import { ExternalLink, ImagePlus, Upload, X } from "lucide-react";
-import { getCurrentUserId } from "utils/userUtils";
 
+function getCurrentUserId(): string | null {
+  try {
+    const u = localStorage.getItem("user");
+    if (!u) return null;
+    const parsed = JSON.parse(u) as { id?: string };
+    return parsed?.id ?? null;
+  } catch {
+    return null;
+  }
+}
 
 const formatYoutubeId = (input: string): string => {
   const trimmed = input.trim();
