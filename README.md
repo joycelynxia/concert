@@ -39,6 +39,22 @@ Instead, it will copy all the configuration files and the transitive dependencie
 
 You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
 
+## Deployment (Vercel + Railway)
+
+**Frontend (Vercel)**  
+Set the backend URL so the app talks to your Railway server:
+
+1. In Vercel: Project → **Settings** → **Environment Variables**
+2. Add: **Name** `REACT_APP_API_URL`, **Value** your Railway backend URL (e.g. `https://your-app-name.up.railway.app`)
+3. Use **Production** (and optionally Preview) and save
+4. **Redeploy** the project so the new variable is used in the build
+
+If `REACT_APP_API_URL` is not set, the frontend falls back to `http://127.0.0.1:4000`, so API calls go to localhost and fail in production (or you may see 405 if the request hits the wrong host).
+
+**Backend (Railway)**  
+- Ensure `MONGO_URI`, `JWT_SECRET`, and any other env vars are set in Railway.
+- The backend CORS is set to allow your Vercel origin; if you use a custom domain, you may need to allow it explicitly in `backend/index.js` (e.g. add your Vercel URL to `origin`).
+
 ## Learn More
 
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).

@@ -10,9 +10,15 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// middleware
-app.use(cors());
-app.use(express.json())
+// CORS: allow frontend (Vercel) and any origin; required for deployed frontend
+const corsOptions = {
+  origin: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+};
+app.use(cors(corsOptions));
+app.use(express.json());
 app.use(express.urlencoded({ extended: true, limit: '200mb' }));
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -21,9 +27,13 @@ app.use('/api/concerts', concertRoutes)
 app.use('/api/upload', uploadRoutes)
 app.use('/api/auth', authRoutes)
 
+app.get('/', (req, res) => {
+  res.json({ message: 'Concert API is running', status: 'ok' });
+});
+
 app.get('/api/test', (req, res) => {
-    res.json({ message: 'Backend connected successfully!' });
-  });
+  res.json({ message: 'Backend connected successfully!' });
+});
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected'))
