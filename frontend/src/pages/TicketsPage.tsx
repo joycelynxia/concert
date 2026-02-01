@@ -3,7 +3,7 @@ import TicketForm from "components/TicketForm";
 import ConcertTicket from "components/Ticket";
 import { ConcertDetails } from "types/types";
 import { useNavigate, useParams } from "react-router-dom";
-import { LayoutGrid, List, Search, SlidersHorizontal, ChevronDown, Share2 } from "lucide-react";
+import { LayoutGrid, List, Search, SlidersHorizontal, ChevronDown } from "lucide-react";
 import { format } from "date-fns";
 import { API_BASE } from "../config/api";
 import "../styling/TicketsPage.css";
@@ -16,7 +16,7 @@ function TicketsPage() {
   const { token: shareToken } = useParams<{ token?: string }>();
   const isViewOnly = Boolean(shareToken);
   const [isFormVisible, setIsFormVisible] = useState(false);
-  const [shareCopied, setShareCopied] = useState(false);
+  // const [shareCopied, setShareCopied] = useState(false);
   const [tickets, setTickets] = useState<ConcertDetails[]>([]);
   // const [error, setError] = useState(null);
   const [sortBy, setSortBy] = useState<SortOption>("date");
@@ -166,40 +166,40 @@ function TicketsPage() {
     setIsFormVisible(!isFormVisible);
   };
 
-  const createShareLink = async (ticketIds: string[]) => {
-    const res = await fetch(`${API_BASE}/api/concerts/share`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ticketIds }),
-    });
-    if (!res.ok) throw new Error("Failed to create share link");
-    const { token } = await res.json();
-    return `${window.location.origin}/tickets/share/${token}`;
-  };
+  // const createShareLink = async (ticketIds: string[]) => {
+  //   const res = await fetch(`${API_BASE}/api/concerts/share`, {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({ ticketIds }),
+  //   });
+  //   if (!res.ok) throw new Error("Failed to create share link");
+  //   const { token } = await res.json();
+  //   return `${window.location.origin}/tickets/share/${token}`;
+  // };
 
-  const handleShare = async () => {
-    const ids = filteredAndSortedTickets.map((t) => t._id);
-    if (ids.length === 0) {
-      window.alert("Add at least one concert to share.");
-      return;
-    }
-    try {
-      const url = await createShareLink(ids);
-      await navigator.clipboard.writeText(url);
-      setShareCopied(true);
-      setTimeout(() => setShareCopied(false), 2500);
-    } catch (err) {
-      console.error(err);
-      window.alert("Could not create share link. Try again.");
-    }
-  };
+  // const handleShare = async () => {
+  //   const ids = filteredAndSortedTickets.map((t) => t._id);
+  //   if (ids.length === 0) {
+  //     window.alert("Add at least one concert to share.");
+  //     return;
+  //   }
+  //   try {
+  //     const url = await createShareLink(ids);
+  //     await navigator.clipboard.writeText(url);
+  //     setShareCopied(true);
+  //     setTimeout(() => setShareCopied(false), 2500);
+  //   } catch (err) {
+  //     console.error(err);
+  //     window.alert("Could not create share link. Try again.");
+  //   }
+  // };
 
   const handleShareTicket = async (ticketId: string) => {
     try {
       const url = `${window.location.origin}/concert/${ticketId}`;
       await navigator.clipboard.writeText(url);
-      setShareCopied(true);
-      setTimeout(() => setShareCopied(false), 2500);
+      // setShareCopied(true);
+      // setTimeout(() => setShareCopied(false), 2500);
     } catch (err) {
       console.error(err);
       window.alert("Could not copy link. Try again.");

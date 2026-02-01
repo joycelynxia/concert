@@ -36,6 +36,14 @@ const ConcertTicket: React.FC<ConcertTicketProps> = (props) => {
   const barcodeRef = useRef<SVGSVGElement>(null);
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
+  const [justCopied, setJustCopied] = useState(false);
+
+  const handleShareClick = async () => {
+    if (!onShare) return;
+    await Promise.resolve(onShare(_id));
+    setJustCopied(true);
+    setTimeout(() => setJustCopied(false), 2500);
+  };
 
   useEffect(() => {
     if (barcodeRef.current) {
@@ -118,11 +126,11 @@ const renderEditForm = () =>
               <button
                 type="button"
                 className="account-btn account-btn-primary account-btn-sm"
-                onClick={() => onShare?.(_id)}
-                aria-label="Copy link to concert experience (media, notes, playlists)"
-                title="Copy link to concert experience page"
+                onClick={handleShareClick}
+                aria-label={justCopied ? "Link copied" : "Copy link to concert experience (media, notes, playlists)"}
+                title={justCopied ? "Link copied" : "Copy link to concert experience page"}
               >
-                share
+                {justCopied ? "Copied" : "share"}
               </button>
             </div>
           )}
