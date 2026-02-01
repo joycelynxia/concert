@@ -73,7 +73,7 @@ function AuthPage() {
     <div className="auth-page">
       <div className="auth-container">
         <div className="auth-header">
-          <h1 className="auth-title">concert journal</h1>
+          <h1 className="auth-title">ENCORE</h1>
           <p className="auth-subtitle">
             {mode === "login"
               ? "Welcome back! Sign in to continue."
