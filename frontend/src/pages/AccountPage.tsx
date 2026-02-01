@@ -20,7 +20,7 @@ function AccountPage() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      navigate("/login", { replace: true });
+      navigate("/", { replace: true });
       return;
     }
     const storedUser = localStorage.getItem("user");
@@ -36,7 +36,7 @@ function AccountPage() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    navigate("/login");
+    navigate("/");
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
@@ -112,7 +112,7 @@ function AccountPage() {
       if (response.ok) {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        navigate("/login");
+        navigate("/");
       } else {
         setDeleteError(data.message || "Failed to delete account");
       }

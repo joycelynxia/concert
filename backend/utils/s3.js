@@ -47,7 +47,7 @@ async function deleteFromS3(url) {
   try {
     const urlObj = new URL(url);
     const pathname = urlObj.pathname;
-    const key = pathname.startsWith("/") ? pathname.slice(1) : pathname;
+    const key = pathname.startsWith("/tickets") ? pathname.slice(1) : pathname;
 
     const command = new DeleteObjectCommand({
       Bucket: bucket,

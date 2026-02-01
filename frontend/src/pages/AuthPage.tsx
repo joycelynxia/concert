@@ -16,7 +16,7 @@ function AuthPage() {
 
   useEffect(() => {
     if (localStorage.getItem("token")) {
-      navigate("/", { replace: true });
+      navigate("/tickets", { replace: true });
     }
   }, [navigate]);
 
@@ -51,7 +51,7 @@ function AuthPage() {
         if (data.user) {
           localStorage.setItem("user", JSON.stringify(data.user));
         }
-        navigate("/");
+        navigate("/tickets");
       } else {
         setError(data.message || "Something went wrong");
       }

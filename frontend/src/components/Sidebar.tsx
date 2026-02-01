@@ -9,7 +9,7 @@ const Sidebar: React.FC = () => {
       <div>
         <h2 className='sidebar-title'>ENCORE</h2>
         <nav className='sidebar-nav'>
-          <Link to="/" className='sidebar-link'>
+          <Link to="/tickets" className='sidebar-link'>
             <Home className='sidebar-icon' /> Home
           </Link>
           <Link to="/calendar" className='sidebar-link'>

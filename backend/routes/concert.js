@@ -11,7 +11,7 @@ const upload = multer({
   dest: "uploads/",
   limits: { fileSize: 10000000 },
   fileFilter: (req, file, cb) => {
-    cb(null, ["image", "video"].includes(file.mimetype.split("/")[0]));
+    cb(null, ["image", "video"].includes(file.mimetype.split("/tickets")[0]));
   },
 });
 

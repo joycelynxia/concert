@@ -5,7 +5,7 @@ const Navigation: React.FC = () => {
   const navigate = useNavigate();
   
   const handleJournal = () => {
-    navigate("/");
+    navigate("/tickets");
   };
 
   const handleCalendar = () => {
