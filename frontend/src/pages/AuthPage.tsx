@@ -45,7 +45,7 @@ function AuthPage() {
         body: JSON.stringify(body),
       });
 
-      let data: { token?: string; user?: unknown; message?: string } = {};
+      let data: { token?: string; user?: unknown; message?: string; error?: string } = {};
       try {
         data = await response.json();
       } catch {
@@ -55,7 +55,7 @@ function AuthPage() {
             ? "API not found (404). Check that REACT_APP_API_URL points to your backend, not the frontend."
             : response.ok
               ? "Invalid response from server"
-              : `Login failed (${status})`;
+              : `Request failed (${status})`;
         setError(msg);
         return;
       }
@@ -67,11 +67,13 @@ function AuthPage() {
         }
         navigate("/tickets");
       } else {
-        setError(
+        const msg =
           response.status === 404
             ? "API not found (404). Check that REACT_APP_API_URL points to your backend, not the frontend."
-            : data.message || "Something went wrong"
-        );
+            : response.status === 500
+              ? (data.message || data.error || "Server error. Check backend logs.")
+              : (data.message || data.error || `Request failed (${response.status})`);
+        setError(msg);
       }
     } catch (err) {
       setError("Unable to connect to the server. Is the backend running?");

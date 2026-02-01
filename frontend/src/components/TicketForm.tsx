@@ -22,6 +22,7 @@ const TicketForm: React.FC<TicketFormProps> = ({
   existingVenues = [],
   existingGenres = [],
 }) => {
+  const [submitError, setSubmitError] = useState("");
   const [concertDetails, setConcertDetails] = useState<ConcertDetails>({
     artist: "",
     tour: "",
@@ -51,9 +52,9 @@ const TicketForm: React.FC<TicketFormProps> = ({
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError("");
 
     try {
-      console.log(`editing: ${isEditing} | ${concertDetails._id}`);
       const url = isEditing
         ? `${API_BASE}/api/concerts/ticket/${concertDetails._id}`
         : `${API_BASE}/api/concerts/ticket`;
@@ -64,23 +65,26 @@ const TicketForm: React.FC<TicketFormProps> = ({
       if (token) headers.Authorization = `Bearer ${token}`;
 
       const response = await fetch(url, {
-        method: method,
+        method,
         headers,
         body: JSON.stringify(concertDetails),
       });
 
-      const data = await response.json();
-      if (response.ok) {
-        console.log("response data:", data);
+      let data: { concert?: ConcertDetails; message?: string; error?: string } = {};
+      try {
+        data = await response.json();
+      } catch {
+        setSubmitError(response.ok ? "Invalid response" : `Server error (${response.status})`);
+        return;
+      }
 
-        console.log("ticket saved:", data.concert);
-        // const ticketWithId = { ...concertDetails, id: data.concert._id };
-        onSave(data.concert); // Pass concert details to parent component
+      if (response.ok) {
+        onSave(data.concert!);
       } else {
-        console.error("error:", data.message);
+        setSubmitError(data.message || data.error || `Request failed (${response.status})`);
       }
     } catch (err) {
-      console.error("network error:", err);
+      setSubmitError("Unable to connect. Is the server running?");
     }
   };
 
@@ -96,6 +100,11 @@ const TicketForm: React.FC<TicketFormProps> = ({
     <div className="form-overlay">
       <div className="form-container">
         <h2>{isEditing ? "Edit Details" : "Add Concert"}</h2>
+        {submitError && (
+          <p className="form-error" role="alert">
+            {submitError}
+          </p>
+        )}
         <form onSubmit={handleSubmit}>
           <label>
             Artist:

@@ -13,7 +13,7 @@ const upload = multer({
   dest: "uploads/",
   limits: { fileSize: 10000000 },
   fileFilter: (req, file, cb) => {
-    cb(null, ["image", "video"].includes(file.mimetype.split("/tickets")[0]));
+    cb(null, ["image", "video"].includes(file.mimetype.split("/")[0]));
   },
 });
 
@@ -108,7 +108,9 @@ router.post("/ticket", async (req, res) => {
       concert: newTicket,
     });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error("POST /ticket error:", error);
+    const status = error.name === "ValidationError" ? 400 : 500;
+    res.status(status).json({ error: error.message });
   }
 });
 

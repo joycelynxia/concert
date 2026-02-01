@@ -58,6 +58,15 @@ router.post("/signup", async (req, res) => {
     res.status(201).json({ token, user: { id: user._id, email: user.email, username: user.username } });
   } catch (err) {
     console.error("Signup error:", err);
+    if (err.code === 11000) {
+      const field = Object.keys(err.keyPattern || {})[0] || "email";
+      return res.status(400).json({
+        message: field === "email" ? "Email already in use" : "Username already in use",
+      });
+    }
+    if (err.name === "ValidationError") {
+      return res.status(400).json({ message: err.message || "Invalid input" });
+    }
     res.status(500).json({ message: "Failed to create account" });
   }
 });

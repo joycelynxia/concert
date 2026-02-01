@@ -4,6 +4,15 @@ form {
   -webkit-overflow-scrolling: touch;
 }
 
+.form-error {
+  color: #c9302c;
+  font-size: 0.9rem;
+  margin: 0 0 1rem;
+  padding: 0.5rem;
+  background: #fef2f2;
+  border-radius: 8px;
+}
+
 .form-buttons {
   margin-top: 1.25rem;
 }

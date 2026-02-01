@@ -1,80 +1,164 @@
-# Getting Started with Create React App
+# ENCORE – Concert Journal
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A full-stack app for tracking concert tickets and memories. Log shows you’ve been to, add photos, videos, and notes, and keep Spotify and YouTube playlists in one place.
+Live Demo: [https://encore-vault.vercel.app/](https://encore-vault.vercel.app/)
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **Tickets** – Add and edit concert details (artist, venue, date, seat, section)
+- **Memories** – Upload photos and videos, write notes for each concert
+- **Calendar** – See concerts by date with a visual calendar
+- **Sharing** – Share entries with others via a link
+- **Spotify & YouTube** – Attach playlists to concerts
+- **Account** – Sign up, log in, change password, delete account
 
-### `npm start`
+## Tech Stack
 
-Runs the app in the development mode.\
-Open [http://127.0.0.1:3000](http://127.0.0.1:3000) to view it in the browser.
+| Layer    | Stack                          |
+|----------|---------------------------------|
+| Frontend | React, TypeScript, React Router |
+| Backend  | Node.js, Express                |
+| Database | MongoDB (Atlas)                 |
+| Auth     | JWT, bcrypt                     |
+| Storage  | AWS S3 (or local disk)          |
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Project Structure
 
-### `npm test`
+```
+project_concert/
+├── frontend/          # React app (Vercel)
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── styling/
+│   │   └── config/
+│   └── public/
+├── backend/           # Express API (Railway)
+│   ├── routes/
+│   ├── models/
+│   └── utils/
+└── README.md
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Local Development
 
-### `npm run build`
+### Prerequisites
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- Node.js 18+
+- MongoDB (local or Atlas)
+- (Optional) AWS S3 for media uploads
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 1. Backend
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+cd backend
+npm install
+```
 
-### `npm run eject`
+Create `backend/.env`:
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```env
+MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/concert?retryWrites=true&w=majority
+JWT_SECRET=your-secret-key
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Optional (for S3 uploads):
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+```env
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+AWS_S3_BUCKET=...
+AWS_REGION=us-east-1
+```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+To use local disk instead of S3:
 
-## Deployment (Vercel + Railway)
+```env
+USE_LOCAL_STORAGE=true
+```
 
-**Frontend (Vercel)**  
-Set the backend URL so the app talks to your Railway server:
+Start the server:
 
-1. In Vercel: Project → **Settings** → **Environment Variables**
-2. Add: **Name** `REACT_APP_API_URL`, **Value** your Railway backend URL (e.g. `https://your-app-name.up.railway.app`)
-3. Use **Production** (and optionally Preview) and save
-4. **Redeploy** the project so the new variable is used in the build
+```bash
+npm run dev
+# or: node index.js
+```
 
-If `REACT_APP_API_URL` is not set, the frontend falls back to `http://127.0.0.1:4000`, so API calls go to localhost and fail in production (or you may see 405 if the request hits the wrong host).
+Backend runs at `http://127.0.0.1:4000`.
 
-**Backend (Railway)**  
-- Ensure `MONGO_URI`, `JWT_SECRET`, and any other env vars are set in Railway.
-- The backend CORS is set to allow your Vercel origin; if you use a custom domain, you may need to allow it explicitly in `backend/index.js` (e.g. add your Vercel URL to `origin`).
+### 2. Frontend
 
-## Testing locally without AWS (avoid S3 storage usage)
+```bash
+cd frontend
+npm install
+```
 
-To test uploads and media locally **without using AWS S3** (so you don’t run out of storage or incur usage):
+Optional – create `frontend/.env` to point at a different backend:
 
-1. **Don’t set AWS env vars**  
-   In your local `backend/.env`, omit (or comment out) `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_S3_BUCKET`.  
-   The backend will use **local disk storage** under `backend/uploads/photos` and `backend/uploads/videos`. Uploaded files are served at `/uploads/...` and are already in `.gitignore`.
+```env
+REACT_APP_API_URL=http://127.0.0.1:4000
+```
 
-2. **Or force local storage**  
-   If your `.env` has AWS credentials for production but you want local runs to skip S3, set:
-   ```bash
-   USE_LOCAL_STORAGE=true
-   ```
-   in `backend/.env`. The backend will then use local disk even when AWS vars are present.
+Start the app:
 
-3. **Check usage in production**  
-   In the [AWS S3 console](https://s3.console.aws.amazon.com/) → your bucket → **Metrics**, or [Billing](https://console.aws.amazon.com/billing/) → **Bills** → **S3**, you can monitor storage and requests.
+```bash
+npm start
+```
 
-## Learn More
+Frontend runs at `http://127.0.0.1:3000`.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Deployment
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Frontend (Vercel)
+
+1. Connect the repo and set the root to `frontend`.
+2. Add environment variable:
+   - **Name:** `REACT_APP_API_URL`
+   - **Value:** your backend URL (e.g. `https://your-app.up.railway.app`)
+3. Deploy.
+
+### Backend (Railway)
+
+1. Create a new service and connect the repo.
+2. Set **Root Directory** to `backend`.
+3. Add environment variables:
+   - `MONGO_URI` – MongoDB Atlas connection string
+   - `JWT_SECRET` – secret for JWT signing
+   - (Optional) `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET`, `AWS_REGION` for S3
+4. Deploy.
+
+### MongoDB Atlas
+
+1. **Network Access** – Add `0.0.0.0/0` so Railway can connect.
+2. **Database User** – Create a user with read/write access.
+3. **Connection String** – Use the “Connect your application” URI as `MONGO_URI`.
+
+## API Overview
+
+| Method | Endpoint             | Description        |
+|--------|----------------------|--------------------|
+| POST   | `/api/auth/signup`   | Create account     |
+| POST   | `/api/auth/login`    | Log in             |
+| GET    | `/api/auth`          | Auth health check  |
+| GET    | `/api/concerts/my_tickets` | User’s tickets (auth) |
+| POST   | `/api/concerts/ticket`     | Create ticket (auth) |
+| PUT    | `/api/concerts/ticket/:id` | Update ticket (auth) |
+| GET    | `/api/concerts/share/:token` | Shared tickets    |
+| POST   | `/api/upload/:ticketId`    | Upload media (auth) |
+
+## Scripts
+
+### Backend
+
+- `npm start` – run server
+- `npm run dev` – run with nodemon
+
+### Frontend
+
+- `npm start` – dev server
+- `npm run build` – production build
+- `npm test` – run tests
+
+## License
+
+ISC

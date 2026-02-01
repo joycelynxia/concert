@@ -35,9 +35,23 @@ app.get('/api/test', (req, res) => {
   res.json({ message: 'Backend connected successfully!' });
 });
 
-mongoose.connect(process.env.MONGO_URI)
+// Global error handler – catches unhandled errors from routes
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ message: 'Server error', error: err.message });
+});
+
+mongoose.connect(process.env.MONGO_URI, {
+  serverSelectionTimeoutMS: 30000,
+  connectTimeoutMS: 30000,
+})
   .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+    if (err.name === 'MongooseServerSelectionError') {
+      console.error('TIP: Add 0.0.0.0/0 to Atlas Network Access (allow from anywhere)');
+    }
+  });
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`server running on port ${PORT}`);
