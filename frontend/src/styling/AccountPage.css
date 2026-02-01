@@ -1,0 +1,248 @@
+.account-page {
+  padding: 2rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.account-container {
+  background: #fff;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.account-header {
+  margin-bottom: 2rem;
+}
+
+.account-title {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #333;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: 1px;
+}
+
+.account-subtitle {
+  font-size: 0.95rem;
+  color: #666;
+  margin: 0;
+}
+
+.account-user-info {
+  padding: 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.account-user-field {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.account-user-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.account-user-value {
+  font-size: 1rem;
+  color: #333;
+}
+
+.account-user-value-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.account-user-value-row .account-user-value {
+  font-family: monospace;
+  letter-spacing: 0.15em;
+}
+
+.account-btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.account-password-form {
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.account-section {
+  padding: 1.5rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.account-section:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.account-section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 0.5rem 0;
+}
+
+.account-section-desc {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0 0 1rem 0;
+}
+
+.account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.account-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #444;
+}
+
+.account-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.account-input::placeholder {
+  color: #999;
+}
+
+.account-input:focus {
+  border-color: #7caadc;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(124, 170, 220, 0.25);
+}
+
+.account-error {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  color: #d9534f;
+  background: #fef2f2;
+  border: 1px solid #f5c6c6;
+  border-radius: 8px;
+}
+
+.account-success {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  color: #155724;
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  border-radius: 8px;
+}
+
+.account-btn {
+  padding: 0.75rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  align-self: flex-start;
+}
+
+.account-btn-primary {
+  background: #7caadc;
+  color: #fff;
+}
+
+.account-btn-primary:hover:not(:disabled) {
+  background: #5a92cc;
+}
+
+.account-btn-primary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.account-btn-primary:disabled {
+  background: #a8c8e8;
+  cursor: not-allowed;
+}
+
+.account-btn-outline {
+  background: #fff;
+  color: #666;
+  border: 1px solid #ccc;
+}
+
+.account-btn-outline:hover {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.account-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.account-btn-secondary {
+  background: #fff;
+  color: #d9534f;
+  border: 1px solid #d9534f;
+}
+
+.account-btn-secondary:hover {
+  background: #fef2f2;
+  color: #c9302c;
+  border-color: #c9302c;
+}
+
+.account-section-danger .account-section-title {
+  color: #c9302c;
+}
+
+.account-btn-danger {
+  background: #c9302c;
+  color: #fff;
+}
+
+.account-btn-danger:hover:not(:disabled) {
+  background: #a82823;
+}
+
+.account-btn-danger:disabled {
+  background: #e8a4a0;
+  cursor: not-allowed;
+}
+
+.account-btn-danger-outline {
+  background: #fff;
+  color: #c9302c;
+  border: 1px solid #c9302c;
+}
+
+.account-btn-danger-outline:hover {
+  background: #fef2f2;
+  color: #a82823;
+  border-color: #a82823;
+}
