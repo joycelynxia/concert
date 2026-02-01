@@ -7,20 +7,10 @@ import { LayoutGrid, List, Search, SlidersHorizontal, ChevronDown } from "lucide
 import { format } from "date-fns";
 import { API_BASE } from "../config/api";
 import "../styling/TicketsPage.css";
+import { getCurrentUserId } from "utils/userUtils";
 
 type SortOption = "date" | "artist";
 type ViewMode = "grid" | "table";
-
-function getCurrentUserId(): string | null {
-  try {
-    const u = localStorage.getItem("user");
-    if (!u) return null;
-    const parsed = JSON.parse(u) as { id?: string };
-    return parsed?.id ?? null;
-  } catch {
-    return null;
-  }
-}
 
 function TicketsPage() {
   const navigate = useNavigate();
