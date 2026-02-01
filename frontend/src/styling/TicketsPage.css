@@ -240,8 +240,9 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;   /* Important for accurate width */
-    height: 100vh;  /* Important for accurate height */
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
     background: rgba(74, 74, 74, 0.5);
     display: flex;
     justify-content: center;
@@ -255,11 +256,14 @@
     background: #ffffff;
     position: relative;
     padding: 1.5rem;
-    width: 100vh;
-    max-width: 500px;
+    width: min(500px, calc(100vw - 2rem));
+    max-height: min(calc(100dvh - 2rem), calc(100vh - 2rem));
     border-radius: 16px;
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
     animation: slideFadeIn 0.3s ease-in-out;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
   
   @keyframes fadeInModal {
@@ -562,12 +566,20 @@
     font-size: 1.35rem;
   }
   .form-overlay {
-    padding: 0.4rem;
+    padding: 0.4rem 0.4rem 2rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    align-items: flex-start;
   }
   .form-container {
     padding: 1rem;
     border-radius: 12px;
-    max-height: calc(100vh - 0.8rem);
+    width: 100%;
+    max-width: 100%;
+    max-height: none;
+    flex: 0 0 auto;
+    overflow: visible;
   }
   .form-container h2 {
     font-size: 1.2rem;

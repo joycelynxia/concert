@@ -1,6 +1,7 @@
 form {
   height: 70vh;
-  overflow-y: scroll;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .form-buttons {
@@ -17,8 +18,9 @@ textarea {
 @media (max-width: 500px) {
   form {
     height: auto;
-    min-height: 50vh;
+    min-height: 0;
     padding: 0;
+    overflow: visible;
   }
   .form-buttons {
     margin-top: 1rem;
