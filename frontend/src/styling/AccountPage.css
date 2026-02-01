@@ -205,3 +205,44 @@
 .account-section-danger .account-section-title {
   color: #c9302c;
 }
+
+@media (max-width: 500px) {
+  .account-page {
+    padding: 0.5rem;
+  }
+  .account-container {
+    padding: 0.75rem;
+    border-radius: 12px;
+  }
+  .account-title {
+    font-size: 1.2rem;
+  }
+  .account-subtitle {
+    font-size: 0.85rem;
+  }
+  .account-user-info {
+    padding: 1rem 0;
+    gap: 1rem;
+  }
+  .account-user-value {
+    font-size: 0.9rem;
+  }
+  .account-modal-backdrop {
+    padding: 0.5rem;
+  }
+  .account-modal {
+    padding: 1rem;
+    border-radius: 12px;
+    max-height: calc(100vh - 1rem);
+  }
+  .account-modal-title {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+  .account-section-title {
+    font-size: 1rem;
+  }
+  .account-section-desc {
+    font-size: 0.85rem;
+  }
+}

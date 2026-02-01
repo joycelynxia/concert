@@ -24,4 +24,24 @@
     object-fit: contain;
     border-radius: 10px;
   }
+
+@media (max-width: 500px) {
+  .slideshow-container {
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .media-wrapper {
+    max-height: 45vh;
+    width: 100%;
+  }
+  .slideshow-media {
+    max-height: 45vh;
+  }
+  .slideshow-btn {
+    font-size: 1.35rem;
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
   

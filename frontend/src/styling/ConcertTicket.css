@@ -62,3 +62,34 @@ body {
   column-gap: 10px;
   margin-top: 10px;
 }
+
+@media (max-width: 500px) {
+  .ticket {
+    height: auto;
+    min-height: 240px;
+  }
+  .ticket-header,
+  .ticket-body {
+    padding: 0.75rem 1rem;
+  }
+  .ticket-artist {
+    font-size: 0.95rem;
+  }
+  .ticket-venue,
+  .ticket-date {
+    font-size: 0.8rem;
+  }
+  .ticket-details {
+    row-gap: 0.5rem;
+  }
+  .ticket-label {
+    font-size: 0.75rem;
+  }
+  .ticket-value {
+    font-size: 0.85rem;
+  }
+  .other-buttons {
+    column-gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+}

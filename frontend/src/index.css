@@ -102,3 +102,17 @@ code {
   flex-wrap: wrap;
 }
 
+/* Screen width < 500px: compact touch targets */
+@media (max-width: 500px) {
+  .account-btn {
+    min-height: 44px;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.9rem;
+  }
+  .account-btn-sm {
+    min-height: 44px;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.85rem;
+  }
+}
+

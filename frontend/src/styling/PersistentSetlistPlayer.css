@@ -79,3 +79,19 @@
 .main-layout.has-persistent-player {
   padding-bottom: 200px;
 }
+
+@media (max-width: 500px) {
+  .persistent-player-header {
+    padding: 0.4rem 0.6rem;
+  }
+  .persistent-player-label {
+    font-size: 0.8rem;
+  }
+  .persistent-player-content {
+    padding: 0 0.6rem 0.75rem;
+  }
+  .youtube-playlist-link {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.9rem;
+  }
+}
