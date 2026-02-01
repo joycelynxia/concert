@@ -11,10 +11,23 @@ import "../styling/TicketsPage.css";
 type SortOption = "date" | "artist";
 type ViewMode = "grid" | "table";
 
+function getCurrentUserId(): string | null {
+  try {
+    const u = localStorage.getItem("user");
+    if (!u) return null;
+    const parsed = JSON.parse(u) as { id?: string };
+    return parsed?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function TicketsPage() {
   const navigate = useNavigate();
   const { token: shareToken } = useParams<{ token?: string }>();
   const isViewOnly = Boolean(shareToken);
+  const currentUserId = getCurrentUserId();
+  const isLoggedIn = Boolean(currentUserId);
   const [isFormVisible, setIsFormVisible] = useState(false);
   // const [shareCopied, setShareCopied] = useState(false);
   const [tickets, setTickets] = useState<ConcertDetails[]>([]);
@@ -90,21 +103,23 @@ function TicketsPage() {
           setTickets(Array.isArray(data) ? data : []);
         })
         .catch(() => setTickets([]));
-    } else {
-      fetch(`${API_BASE}/api/concerts/all_tickets`)
+    } else if (isLoggedIn) {
+      const token = localStorage.getItem("token");
+      const headers: Record<string, string> = {};
+      if (token) headers.Authorization = `Bearer ${token}`;
+      fetch(`${API_BASE}/api/concerts/my_tickets`, { headers })
         .then((response) => response.json())
         .then((data) => {
-          if (Array.isArray(data)) {
-            setTickets(data);
-          } else {
-            setTickets([]);
-          }
+          setTickets(Array.isArray(data) ? data : []);
         })
         .catch((error) => {
-          console.log("error: failed to fetch all tickets", error);
+          console.log("error: failed to fetch my tickets", error);
+          setTickets([]);
         });
+    } else {
+      setTickets([]);
     }
-  }, [isViewOnly, shareToken]);
+  }, [isViewOnly, shareToken, isLoggedIn]);
 
   const handleDeleteTicket = async (ticketId: string) => {
     const confirm = window.confirm(
@@ -113,10 +128,14 @@ function TicketsPage() {
 
     if (confirm) {
       try {
+        const headers: Record<string, string> = {};
+        const token = localStorage.getItem("token");
+        if (token) headers.Authorization = `Bearer ${token}`;
         const res = await fetch(
           `${API_BASE}/api/concerts/ticket/${ticketId}`,
           {
             method: "DELETE",
+            headers: Object.keys(headers).length ? headers : undefined,
           }
         );
         if (res.ok) {
@@ -211,14 +230,16 @@ function TicketsPage() {
       <div className="header">
         <div className="header-title-row">
           <h1 className="page-title">my concerts</h1>
-          <button
-            type="button"
-            className="account-btn account-btn-primary add-ticket-button"
-            onClick={onToggleForm}
-            aria-label="Add concert"
-          >
-            +
-          </button>
+          {isLoggedIn && !isViewOnly && (
+            <button
+              type="button"
+              className="account-btn account-btn-primary add-ticket-button"
+              onClick={onToggleForm}
+              aria-label="Add concert"
+            >
+              +
+            </button>
+          )}
         </div>
         <div className="toolbar-row" ref={filterPanelRef}>
           <div className="search-wrapper">
@@ -390,19 +411,23 @@ function TicketsPage() {
       <div className={`tickets-container ${viewMode === "table" ? "table-view" : ""}`}>
         {viewMode === "grid" ? (
             <div className="ticket-list">
-            {filteredAndSortedTickets.map((ticket) => (
-              <div key={ticket._id}>
-                <ConcertTicket
-                  {...ticket}
-                  onDelete={handleDeleteTicket}
-                  onSave={handleSaveTicket}
-                  onShare={handleShareTicket}
-                  existingVenues={uniqueVenues}
-                  existingGenres={uniqueGenres}
-                  isViewOnly={isViewOnly}
-                />
-              </div>
-            ))}
+            {filteredAndSortedTickets.map((ticket) => {
+              const canEdit = isLoggedIn && (ticket.user != null && String(ticket.user) === String(currentUserId));
+              return (
+                <div key={ticket._id}>
+                  <ConcertTicket
+                    {...ticket}
+                    onDelete={handleDeleteTicket}
+                    onSave={handleSaveTicket}
+                    onShare={handleShareTicket}
+                    existingVenues={uniqueVenues}
+                    existingGenres={uniqueGenres}
+                    isViewOnly={isViewOnly}
+                    canEdit={canEdit}
+                  />
+                </div>
+              );
+            })}
           </div>
         ) : (
           <div className="ticket-table-wrapper">
@@ -432,24 +457,27 @@ function TicketsPage() {
                     <td>{ticket.section || "—"}</td>
                     <td>{ticket.seatInfo || "—"}</td>
                     <td className="table-actions" onClick={(e) => e.stopPropagation()}>
-                      {!isViewOnly && (
-                        <>
-                          <button
-                            type="button"
-                            className="account-btn account-btn-outline account-btn-sm table-action-btn"
-                            onClick={() => setEditingTicketId(ticket._id)}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            className="account-btn account-btn-danger account-btn-sm table-action-btn"
-                            onClick={() => handleDeleteTicket(ticket._id)}
-                          >
-                            Delete
-                          </button>
-                        </>
-                      )}
+                      {!isViewOnly && (() => {
+                        const canEdit = isLoggedIn && (ticket.user != null && String(ticket.user) === String(currentUserId));
+                        return canEdit ? (
+                          <>
+                            <button
+                              type="button"
+                              className="account-btn account-btn-outline account-btn-sm table-action-btn"
+                              onClick={() => setEditingTicketId(ticket._id)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              className="account-btn account-btn-danger account-btn-sm table-action-btn"
+                              onClick={() => handleDeleteTicket(ticket._id)}
+                            >
+                              Delete
+                            </button>
+                          </>
+                        ) : null;
+                      })()}
                     </td>
                   </tr>
                 ))}

@@ -49,6 +49,16 @@ const getUserIdFromRequest = (req) => {
   }
 };
 
+const requireTicketOwner = async (req, res, ticket) => {
+  const userId = getUserIdFromRequest(req);
+  if (!userId) return res.status(401).json({ message: "Login required" });
+  const ticketUserId = ticket.user ? String(ticket.user) : null;
+  if (!ticketUserId || ticketUserId !== String(userId)) {
+    return res.status(403).json({ message: "You can only edit your own entries" });
+  }
+  return null;
+};
+
 router.post("/ticket", async (req, res) => {
   console.log("POST /ticket hit");
   console.log(req.body); // 👀 log incoming data
@@ -107,6 +117,8 @@ router.put("/ticket/:id", async (req, res) => {
   try {
     const ticket = await ConcertTicket.findById(req.params.id);
     if (!ticket) return res.status(404).json({ message: "Ticket not found" });
+    const ownerError = await requireTicketOwner(req, res, ticket);
+    if (ownerError) return ownerError;
 
     const userId = getUserIdFromRequest(req);
     if (userId && !ticket.user) {
@@ -165,6 +177,20 @@ router.get("/all_tickets", async (req, res) => {
   try {
     const tickets = await ConcertTicket.find();
     console.log(tickets[0]._id);
+    res.json(tickets);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/** Returns only tickets belonging to the authenticated user. Requires Authorization header. */
+router.get("/my_tickets", async (req, res) => {
+  try {
+    const userId = getUserIdFromRequest(req);
+    if (!userId) {
+      return res.status(401).json({ message: "Login required" });
+    }
+    const tickets = await ConcertTicket.find({ user: userId }).sort({ date: 1 });
     res.json(tickets);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -266,6 +292,8 @@ router.put("/:id/youtube-playlist", async (req, res) => {
   try {
     const ticket = await ConcertTicket.findById(id);
     if (!ticket) return res.status(404).json({ message: "Ticket not found" });
+    const ownerError = await requireTicketOwner(req, res, ticket);
+    if (ownerError) return ownerError;
     ticket.youtubePlaylist = parsedId || undefined;
     await ticket.save();
     res.json({ youtubePlaylist: ticket.youtubePlaylist });
@@ -287,15 +315,10 @@ router.put("/:id/playlist", async (req, res) => {
   }
 
   try {
-    // const experience = await ConcertExperience.findOne({ concertTicket: id });
-    // if (!experience)
-    //   return res.status(404).json({ error: "Concert experience not found" });
-    // experience.setlist = parsedId;
-    // await experience.save();
-
     const ticket = await ConcertTicket.findById(id);
     if (!ticket) return res.status(404).json({ message: "Ticket not found" });
-
+    const ownerError = await requireTicketOwner(req, res, ticket);
+    if (ownerError) return ownerError;
     ticket.setlist = parsedId;
     await ticket.save();
     res.json({ setlist: ticket.setlist });
@@ -322,6 +345,11 @@ router.delete("/ticket/:id", async (req, res) => {
   const id = req.params.id;
   console.log("deleting ticket", id);
   try {
+    const ticket = await ConcertTicket.findById(id);
+    if (!ticket) return res.status(404).json({ message: "Ticket not found" });
+    const ownerError = await requireTicketOwner(req, res, ticket);
+    if (ownerError) return ownerError;
+
     const experience = await ConcertExperience.findOne({ concertTicket: id });
     console.log("found experience:", experience);
     if (!experience)

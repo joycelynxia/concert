@@ -10,6 +10,8 @@ export interface ConcertDetails {
     priceCents?: number;
     genre?: string;
     _id: string;
+    /** User ID of the owner; only set when returned from API. */
+    user?: string;
   }
 
 export interface ConcertMemory {

@@ -13,6 +13,8 @@ interface ConcertTicketProps extends ConcertDetails {
   existingVenues?: string[];
   existingGenres?: string[];
   isViewOnly?: boolean;
+  /** When false, edit/delete are hidden (e.g. not owner or not logged in). */
+  canEdit?: boolean;
 }
 const ConcertTicket: React.FC<ConcertTicketProps> = (props) => {
   const {
@@ -31,6 +33,7 @@ const ConcertTicket: React.FC<ConcertTicketProps> = (props) => {
     existingVenues = [],
     existingGenres = [],
     isViewOnly = false,
+    canEdit = true,
   } = props;
 
   const barcodeRef = useRef<SVGSVGElement>(null);
@@ -122,7 +125,9 @@ const renderEditForm = () =>
           </div>
           {!isViewOnly && (
             <div className="other-buttons account-form-actions" onClick={(e) => e.stopPropagation()}>
-              <button type="button" className="account-btn account-btn-outline account-btn-sm" onClick={() => setIsEditing(true)}>edit</button>
+              {canEdit && (
+                <button type="button" className="account-btn account-btn-outline account-btn-sm" onClick={() => setIsEditing(true)}>edit</button>
+              )}
               <button
                 type="button"
                 className="account-btn account-btn-primary account-btn-sm"

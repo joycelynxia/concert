@@ -2,11 +2,36 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
 const ConcertExperience = require('../models/ConcertExperience');
 const ConcertMemory = require('../models/ConcertMemory');
 const ConcertTicket = require('../models/ConcertTicket');
 const { uploadToS3, deleteFromS3, isS3Enabled } = require('../utils/s3');
 const router = express.Router();
+
+const getUserIdFromRequest = (req) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) return null;
+  try {
+    const decoded = jwt.verify(
+      authHeader.replace('Bearer ', ''),
+      process.env.JWT_SECRET || 'concert-journal-secret'
+    );
+    return decoded.userId || null;
+  } catch {
+    return null;
+  }
+};
+
+const requireTicketOwner = async (req, res, ticket) => {
+  const userId = getUserIdFromRequest(req);
+  if (!userId) return res.status(401).json({ message: 'Login required' });
+  const ticketUserId = ticket.user ? String(ticket.user) : null;
+  if (!ticketUserId || ticketUserId !== String(userId)) {
+    return res.status(403).json({ message: 'You can only edit your own entries' });
+  }
+  return null;
+};
 
 // Storage config: use memory storage for S3, disk storage for local fallback
 const useS3 = isS3Enabled();
@@ -46,6 +71,11 @@ router.post('/:ticketId', upload.array('files', 10), async (req, res) => {
   console.log('adding memory to ticket', ticketId);
 
   try {
+    const ticket = await ConcertTicket.findById(ticketId);
+    if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+    const ownerError = await requireTicketOwner(req, res, ticket);
+    if (ownerError) return ownerError;
+
     const experience = await ConcertExperience.findOne({ concertTicket: ticketId });
     if (!experience) return res.status(404).json({ error: 'Experience not found' });
 
@@ -126,14 +156,20 @@ router.put('/:memoryID', async (req, res) => {
   try {
     console.log('updating memory');
     const { memoryID } = req.params;
-    const { content } = req.body
-    
-    const memory = await ConcertMemory.findById(memoryID)
-    if (!memory) return res.status(404).json({error:'memory not found'})
-   
-      if (memory.type !== 'note') {
-      return res.status(400).json({error:'only notes can be edited'})
+    const { content } = req.body;
+
+    const memory = await ConcertMemory.findById(memoryID);
+    if (!memory) return res.status(404).json({ error: 'memory not found' });
+    if (memory.type !== 'note') {
+      return res.status(400).json({ error: 'only notes can be edited' });
     }
+
+    const experience = await ConcertExperience.findById(memory.experience);
+    if (!experience) return res.status(404).json({ error: 'Experience not found' });
+    const ticket = await ConcertTicket.findById(experience.concertTicket);
+    if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+    const ownerError = await requireTicketOwner(req, res, ticket);
+    if (ownerError) return ownerError;
 
     memory.content = content;
     await memory.save();
@@ -146,13 +182,18 @@ router.put('/:memoryID', async (req, res) => {
 });
 
 router.delete('/:ticketID/:memoryID', async (req, res) => {
-  const {ticketID, memoryID} = req.params;
-  console.log('exp id:', ticketID, 'memoryID', memoryID)
+  const { ticketID, memoryID } = req.params;
+  console.log('exp id:', ticketID, 'memoryID', memoryID);
 
   try {
-    const exp = await ConcertExperience.findOne({concertTicket: ticketID});
-    console.log('deleting memory from', exp)
-    if (!exp) return res.status(404)
+    const ticket = await ConcertTicket.findById(ticketID);
+    if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+    const ownerError = await requireTicketOwner(req, res, ticket);
+    if (ownerError) return ownerError;
+
+    const exp = await ConcertExperience.findOne({ concertTicket: ticketID });
+    console.log('deleting memory from', exp);
+    if (!exp) return res.status(404).json({ error: 'Experience not found' });
 
     const memory = await ConcertMemory.findById(memoryID);
     console.log('deleting memory', memory)

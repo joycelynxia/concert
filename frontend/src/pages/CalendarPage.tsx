@@ -10,6 +10,17 @@ import { ConcertDetails } from "types/types";
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
 
+function getCurrentUserId(): string | null {
+  try {
+    const u = localStorage.getItem("user");
+    if (!u) return null;
+    const parsed = JSON.parse(u) as { id?: string };
+    return parsed?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
 const now = new Date();
 now.setHours(0, 0, 0, 0);
 
@@ -27,17 +38,25 @@ const ConcertListItem: React.FC<{ concert: ConcertDetails }> = ({ concert }) => 
 );
 
 const CalendarPage: React.FC = () => {
+  const isLoggedIn = Boolean(getCurrentUserId());
   const [concerts, setConcerts] = useState<ConcertDetails[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/concerts/all_tickets`)
+    if (!isLoggedIn) {
+      setConcerts([]);
+      return;
+    }
+    const token = localStorage.getItem("token");
+    const headers: Record<string, string> = {};
+    if (token) headers.Authorization = `Bearer ${token}`;
+    fetch(`${API_BASE}/api/concerts/my_tickets`, { headers })
       .then((res) => res.json())
       .then((data) => {
         setConcerts(Array.isArray(data) ? data : []);
       })
       .catch(() => setConcerts([]));
-  }, []);
+  }, [isLoggedIn]);
 
   const concertsByDate = concerts.reduce((acc, concert) => {
     const dateKey = concert.date.split("T")[0];

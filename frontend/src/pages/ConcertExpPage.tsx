@@ -7,6 +7,17 @@ import "../styling/ConcertExp.css";
 import Linkify from "react-linkify";
 import { ExternalLink, ImagePlus, Upload, X } from "lucide-react";
 
+function getCurrentUserId(): string | null {
+  try {
+    const u = localStorage.getItem("user");
+    if (!u) return null;
+    const parsed = JSON.parse(u) as { id?: string };
+    return parsed?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
 const formatYoutubeId = (input: string): string => {
   const trimmed = input.trim();
   const match = trimmed.match(/[?&]list=([a-zA-Z0-9_-]+)/);
@@ -21,9 +32,16 @@ const formatSpotifyId = (input: string): string => {
 
 const ConcertExpPage: React.FC = () => {
   const { id } = useParams();
+  const currentUserId = getCurrentUserId();
+  const isLoggedIn = Boolean(currentUserId);
   const [memories, setMemories] = useState<ConcertMemory[]>([]);
   const [concertDetails, setConcertDetails] = useState<ConcertDetails>();
   const [editMode, setEditMode] = useState(false);
+  const canEdit = Boolean(
+    isLoggedIn &&
+    concertDetails?.user != null &&
+    String(concertDetails.user) === String(currentUserId)
+  );
   const [editedNote, setEditedNote] = useState("");
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
@@ -114,9 +132,12 @@ const ConcertExpPage: React.FC = () => {
 
     if (noteID) {
       try {
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        const token = localStorage.getItem("token");
+        if (token) headers.Authorization = `Bearer ${token}`;
         const res = await fetch(`${API_BASE}/api/upload/${noteID}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({ content: editedNote }),
         });
         const data = await res.json();
@@ -130,8 +151,12 @@ const ConcertExpPage: React.FC = () => {
     }
 
     try {
+      const headers: Record<string, string> = {};
+      const token = localStorage.getItem("token");
+      if (token) headers.Authorization = `Bearer ${token}`;
       const res = await fetch(`${API_BASE}/api/upload/${id}`, {
         method: "POST",
+        headers,
         body: formData,
       });
       const data = await res.json();
@@ -158,10 +183,14 @@ const ConcertExpPage: React.FC = () => {
     if (!id || !mediaId) return;
 
     try {
+      const headers: Record<string, string> = {};
+      const token = localStorage.getItem("token");
+      if (token) headers.Authorization = `Bearer ${token}`;
       const res = await fetch(
         `${API_BASE}/api/upload/${id}/${mediaId}`,
         {
           method: "DELETE",
+          headers: Object.keys(headers).length ? headers : undefined,
         }
       );
       if (!res.ok) throw new Error("Failed to delete");
@@ -180,11 +209,14 @@ const ConcertExpPage: React.FC = () => {
   const handleAddSpotifyPlaylist = async () => {
     if (!id || !newSpotifyPlaylistId) return;
     try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      const token = localStorage.getItem("token");
+      if (token) headers.Authorization = `Bearer ${token}`;
       const res = await fetch(
         `${API_BASE}/api/concerts/${id}/playlist`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({ setlist: newSpotifyPlaylistId }),
         }
       );
@@ -203,11 +235,14 @@ const ConcertExpPage: React.FC = () => {
   const handleAddYoutubePlaylist = async () => {
     if (!id || !newYoutubePlaylistId) return;
     try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      const token = localStorage.getItem("token");
+      if (token) headers.Authorization = `Bearer ${token}`;
       const res = await fetch(
         `${API_BASE}/api/concerts/${id}/youtube-playlist`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({ youtubePlaylist: newYoutubePlaylistId }),
         }
       );
@@ -233,7 +268,7 @@ const ConcertExpPage: React.FC = () => {
           {concertDetails?.artist}: {concertDetails?.tour}
         </h1>
       </div>
-      {editMode ? (
+      {editMode && canEdit ? (
         <>
           <button
             type="button"
@@ -414,19 +449,7 @@ const ConcertExpPage: React.FC = () => {
           </section>
         </>
       ) : media.length === 0 && !note?.content ? (
-        <button
-          type="button"
-          onClick={() => {
-            setEditMode(true);
-            setEditedNote(note?.content || "");
-            setNoteID(note?._id || "");
-          }}
-          className="account-btn account-btn-primary"
-        >
-          Add Experience
-        </button>
-      ) : (
-        <>
+        canEdit ? (
           <button
             type="button"
             onClick={() => {
@@ -434,10 +457,26 @@ const ConcertExpPage: React.FC = () => {
               setEditedNote(note?.content || "");
               setNoteID(note?._id || "");
             }}
-            className="account-btn account-btn-primary edit-button"
+            className="account-btn account-btn-primary"
           >
-            Edit
+            Add Experience
           </button>
+        ) : null
+      ) : (
+        <>
+          {canEdit && (
+            <button
+              type="button"
+              onClick={() => {
+                setEditMode(true);
+                setEditedNote(note?.content || "");
+                setNoteID(note?._id || "");
+              }}
+              className="account-btn account-btn-primary edit-button"
+            >
+              Edit
+            </button>
+          )}
 
           <div className="flex-row">
             <div className="media-section">
