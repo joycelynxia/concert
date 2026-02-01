@@ -102,7 +102,16 @@ const CalendarPage: React.FC = () => {
       <div className="concert-list">
         {selectedDate ? (
           <>
-            <h3>Concerts on {format(selectedDate, "PPP")}</h3>
+            <div className="calendar-list-header">
+              <h3>Concerts on {format(selectedDate, "PPP")}</h3>
+              <button
+                type="button"
+                className="account-btn account-btn-outline account-btn-sm"
+                onClick={() => setSelectedDate(null)}
+              >
+                Show upcoming & past
+              </button>
+            </div>
             {displayedConcerts && displayedConcerts.length > 0 ? (
               <ul>
                 {displayedConcerts.map((c) => (
