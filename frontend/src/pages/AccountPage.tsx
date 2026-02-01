@@ -129,7 +129,6 @@ function AccountPage() {
       <div className="account-container">
         <div className="account-header">
           <h1 className="account-title">My Account</h1>
-          <p className="account-subtitle">Manage your account settings</p>
         </div>
 
         <section className="account-section account-user-info">
@@ -143,81 +142,109 @@ function AccountPage() {
           </div>
           <div className="account-user-field">
             <span className="account-user-label">Password</span>
-            {isChangingPassword ? (
-              <>
-                <form onSubmit={handleChangePassword} className="account-form account-password-form">
-                  <label className="account-label">
-                    Current Password
-                    <input
-                      type="password"
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="account-input"
-                      required
-                    />
-                  </label>
-                  <label className="account-label">
-                    New Password
-                    <input
-                      type="password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="account-input"
-                      required
-                      minLength={6}
-                    />
-                  </label>
-                  <label className="account-label">
-                    Confirm New Password
-                    <input
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="account-input"
-                      required
-                      minLength={6}
-                    />
-                  </label>
-                  {error && <p className="account-error">{error}</p>}
-                  {success && <p className="account-success">{success}</p>}
-                  <div className="account-form-actions">
-                    <button type="submit" className="account-btn account-btn-primary" disabled={isLoading}>
-                      {isLoading ? "Updating..." : "Update Password"}
-                    </button>
-                    <button
-                      type="button"
-                      className="account-btn account-btn-outline"
-                      onClick={() => {
-                        setIsChangingPassword(false);
-                        setError("");
-                        setSuccess("");
-                        setCurrentPassword("");
-                        setNewPassword("");
-                        setConfirmPassword("");
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              </>
-            ) : (
-              <div className="account-user-value-row">
-                <span className="account-user-value">••••••••</span>
-                <button
-                  type="button"
-                  className="account-btn account-btn-primary account-btn-sm"
-                  onClick={() => setIsChangingPassword(true)}
-                >
-                  Change Password
-                </button>
-              </div>
-            )}
+            <div className="account-user-value-row">
+              <span className="account-user-value">••••••••</span>
+              <button
+                type="button"
+                className="account-btn account-btn-primary account-btn-sm"
+                onClick={() => setIsChangingPassword(true)}
+              >
+                Change Password
+              </button>
+            </div>
           </div>
         </section>
+
+        {isChangingPassword && (
+          <div
+            className="account-modal-backdrop"
+            onClick={() => {
+              if (!isLoading) {
+                setIsChangingPassword(false);
+                setError("");
+                setSuccess("");
+                setCurrentPassword("");
+                setNewPassword("");
+                setConfirmPassword("");
+              }
+            }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="change-password-modal-title"
+          >
+            <div
+              className="account-modal"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 id="change-password-modal-title" className="account-modal-title">
+                Change Password
+              </h2>
+              <form onSubmit={handleChangePassword} className="account-form account-password-form">
+                <label className="account-label">
+                  Current Password
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="account-input"
+                    required
+                    autoComplete="current-password"
+                  />
+                </label>
+                <label className="account-label">
+                  New Password
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="account-input"
+                    required
+                    minLength={6}
+                    autoComplete="new-password"
+                  />
+                </label>
+                <label className="account-label">
+                  Confirm New Password
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="account-input"
+                    required
+                    minLength={6}
+                    autoComplete="new-password"
+                  />
+                </label>
+                {error && <p className="account-error">{error}</p>}
+                {success && <p className="account-success">{success}</p>}
+                <div className="account-form-actions">
+
+                  <button
+                    type="button"
+                    className="account-btn account-btn-outline"
+                    onClick={() => {
+                      setIsChangingPassword(false);
+                      setError("");
+                      setSuccess("");
+                      setCurrentPassword("");
+                      setNewPassword("");
+                      setConfirmPassword("");
+                    }}
+                    disabled={isLoading}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="account-btn account-btn-primary" disabled={isLoading}>
+                    {isLoading ? "Updating..." : "Update Password"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         <section className="account-section">
           <h2 className="account-section-title">Sign Out</h2>

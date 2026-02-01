@@ -6,6 +6,8 @@ const multer = require("multer");
 const ConcertTicket = require("../models/ConcertTicket");
 const ConcertExperience = require("../models/ConcertExperience");
 const ConcertMemory = require("../models/ConcertMemory");
+const ShareLink = require("../models/ShareLink");
+const crypto = require("crypto");
 
 const upload = multer({
   dest: "uploads/",
@@ -163,6 +165,36 @@ router.get("/all_tickets", async (req, res) => {
   try {
     const tickets = await ConcertTicket.find();
     console.log(tickets[0]._id);
+    res.json(tickets);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post("/share", async (req, res) => {
+  try {
+    const { ticketIds } = req.body;
+    if (!Array.isArray(ticketIds) || ticketIds.length === 0) {
+      return res.status(400).json({ error: "ticketIds array is required" });
+    }
+    const token = crypto.randomBytes(12).toString("hex");
+    const shareLink = new ShareLink({ token, ticketIds });
+    await shareLink.save();
+    res.status(201).json({ token });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get("/share/:token", async (req, res) => {
+  try {
+    const shareLink = await ShareLink.findOne({ token: req.params.token });
+    if (!shareLink) {
+      return res.status(404).json({ message: "Share link not found or expired" });
+    }
+    const tickets = await ConcertTicket.find({
+      _id: { $in: shareLink.ticketIds },
+    }).sort({ date: 1 });
     res.json(tickets);
   } catch (error) {
     res.status(500).json({ error: error.message });

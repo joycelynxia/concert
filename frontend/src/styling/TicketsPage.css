@@ -364,6 +364,8 @@
   .ticket-table-wrapper {
     width: 100%;
     overflow-x: auto;
+    border-radius: 10px;
+
   }
 
   .ticket-table {
@@ -371,6 +373,7 @@
     border-collapse: collapse;
     font-size: 0.95rem;
     background: white;
+    border-radius: 10px;
   }
 
   .ticket-table th,
@@ -470,6 +473,35 @@
 .view-toggle-btn.active {
   background: #7caadc;
   color: #fff;
+}
+
+.share-link-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid #7caadc;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #7caadc;
+  background: #fff;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.share-link-button:hover {
+  background: rgba(124, 170, 220, 0.1);
+  color: #5a8fc9;
+}
+
+.share-link-button span {
+  white-space: nowrap;
+}
+
+.view-only-message {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #666;
 }
 
 .add-ticket-button,

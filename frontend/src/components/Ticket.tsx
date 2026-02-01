@@ -9,8 +9,10 @@ import TicketForm from "./TicketForm";
 interface ConcertTicketProps extends ConcertDetails {
   onDelete: (id: string) => void;
   onSave: (ticket: ConcertDetails) => void;
+  onShare?: (ticketId: string) => void;
   existingVenues?: string[];
   existingGenres?: string[];
+  isViewOnly?: boolean;
 }
 const ConcertTicket: React.FC<ConcertTicketProps> = (props) => {
   const {
@@ -25,8 +27,10 @@ const ConcertTicket: React.FC<ConcertTicketProps> = (props) => {
     _id,
     onDelete,
     onSave,
+    onShare,
     existingVenues = [],
     existingGenres = [],
+    isViewOnly = false,
   } = props;
 
   const barcodeRef = useRef<SVGSVGElement>(null);
@@ -108,10 +112,19 @@ const renderEditForm = () =>
             <div className="num-photos"></div>
             <div className="has-entry"></div>
           </div>
-          <div className="other-buttons" onClick={(e) => e.stopPropagation()}>
-            <button type="button" onClick={() => setIsEditing(true)}>edit</button>
-            <button type="button">share</button>
-          </div>
+          {!isViewOnly && (
+            <div className="other-buttons" onClick={(e) => e.stopPropagation()}>
+              <button type="button" onClick={() => setIsEditing(true)}>edit</button>
+              <button
+                type="button"
+                onClick={() => onShare?.(_id)}
+                aria-label="Copy link to concert experience (media, notes, playlists)"
+                title="Copy link to concert experience page"
+              >
+                share
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </>

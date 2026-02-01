@@ -220,11 +220,13 @@ const TicketForm: React.FC<TicketFormProps> = ({
           </label>
           <div className="form-buttons">
             {isEditing ? (
-              <button onClick={() => onDelete(concertDetails._id)}>
+              <button type="button" onClick={() => onDelete(concertDetails._id)}>
                 Delete
               </button>
             ) : (
-              <button onClick={onCancel}>Cancel</button>
+              <button type="button" onClick={onCancel}>
+                Cancel
+              </button>
             )}
             <button type="submit">Save</button>
           </div>

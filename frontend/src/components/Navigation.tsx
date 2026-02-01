@@ -18,11 +18,14 @@ const Navigation: React.FC = () => {
 
   return (
     <div className="nav-container">
-      <div className="logo">ENCORE</div>
-      <div className="pages">
+      <div className="logo left">ENCORE</div>
+      <div className="pages middle">
         <div id="journal" onClick={handleJournal}>journal entries</div>
         <div id="calendar" onClick={handleCalendar}>calendar</div>
-        <div id="account" onClick={handleAccount}>my account</div>
+      </div>
+      <div className="pages right">
+      <div id="account" onClick={handleAccount}>my account</div>
+
       </div>
     </div>
   );

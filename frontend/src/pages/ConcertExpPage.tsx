@@ -5,7 +5,7 @@ import SimpleSlideshow from "../components/MediaSlideshow";
 import { API_BASE } from "../config/api";
 import "../styling/ConcertExp.css";
 import Linkify from "react-linkify";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, ImagePlus, Upload, X } from "lucide-react";
 
 const formatYoutubeId = (input: string): string => {
   const trimmed = input.trim();
@@ -71,11 +71,39 @@ const ConcertExpPage: React.FC = () => {
   const media = memories.filter((m) => m.type !== "note");
   const note = memories.find((m) => m.type === "note");
 
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
-    setNewFiles(files);
-    setPreviewUrls(files.map((file) => URL.createObjectURL(file)));
+    setNewFiles((prev) => [...prev, ...files]);
+    setPreviewUrls((prev) => [
+      ...prev,
+      ...files.map((file) => URL.createObjectURL(file)),
+    ]);
+    e.target.value = "";
   };
+
+  const removeNewFile = (idx: number) => {
+    URL.revokeObjectURL(previewUrls[idx]);
+    setNewFiles((prev) => prev.filter((_, i) => i !== idx));
+    setPreviewUrls((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files).filter(
+      (f) => f.type.startsWith("image/") || f.type.startsWith("video/")
+    );
+    if (files.length) {
+      setNewFiles((prev) => [...prev, ...files]);
+      setPreviewUrls((prev) => [
+        ...prev,
+        ...files.map((f) => URL.createObjectURL(f)),
+      ]);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => e.preventDefault();
 
   const handleSaveAll = async () => {
     if (!id) return;
@@ -109,6 +137,7 @@ const ConcertExpPage: React.FC = () => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "upload failed");
 
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
       setNewFiles([]);
       setEditMode(false);
       setPreviewUrls([]);
@@ -221,18 +250,59 @@ const ConcertExpPage: React.FC = () => {
               <h2 className="section-title">Media</h2>
 
               <input
+                ref={fileInputRef}
                 type="file"
                 multiple
                 accept="image/*,video/*"
                 onChange={handleFileChange}
+                className="upload-input-hidden"
               />
-              <div className="preview-grid">
-                {previewUrls.map((url, idx) => (
-                  <div key={idx} className="preview-item">
-                    <img src={url} alt={`preview-${idx}`} />
-                  </div>
-                ))}
+              <div
+                className="upload-dropzone"
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <ImagePlus size={32} strokeWidth={1.5} className="upload-icon" />
+                <p className="upload-text">
+                  Drop photos or videos here, or click to browse
+                </p>
+                <span className="upload-hint">Supports images and videos</span>
               </div>
+
+              {previewUrls.length > 0 && (
+                <div className="preview-section">
+                  <p className="preview-label">
+                    <Upload size={16} /> New files ({previewUrls.length})
+                  </p>
+                  <div className="preview-grid">
+                    {previewUrls.map((url, idx) => {
+                      const file = newFiles[idx];
+                      const isVideo = file?.type.startsWith("video/");
+                      return (
+                        <div key={idx} className="preview-item">
+                          {isVideo ? (
+                            <video src={url} muted />
+                          ) : (
+                            <img src={url} alt={`preview-${idx}`} />
+                          )}
+                          <button
+                            type="button"
+                            className="preview-remove"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeNewFile(idx);
+                            }}
+                            aria-label="Remove"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               <ul className="media-grid">
                 {media.map((m) => (

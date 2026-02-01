@@ -2,8 +2,8 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import TicketForm from "components/TicketForm";
 import ConcertTicket from "components/Ticket";
 import { ConcertDetails } from "types/types";
-import { useNavigate } from "react-router-dom";
-import { LayoutGrid, List, Search, SlidersHorizontal, ChevronDown } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
+import { LayoutGrid, List, Search, SlidersHorizontal, ChevronDown, Share2 } from "lucide-react";
 import { format } from "date-fns";
 import { API_BASE } from "../config/api";
 import "../styling/TicketsPage.css";
@@ -13,7 +13,10 @@ type ViewMode = "grid" | "table";
 
 function TicketsPage() {
   const navigate = useNavigate();
+  const { token: shareToken } = useParams<{ token?: string }>();
+  const isViewOnly = Boolean(shareToken);
   const [isFormVisible, setIsFormVisible] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
   const [tickets, setTickets] = useState<ConcertDetails[]>([]);
   // const [error, setError] = useState(null);
   const [sortBy, setSortBy] = useState<SortOption>("date");
@@ -77,20 +80,31 @@ function TicketsPage() {
   }, [tickets, searchQuery, filterVenue, filterGenre, sortBy]);
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/concerts/all_tickets`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setTickets(data);
-        } else {
-          setTickets([]);
-        }
-      })
-      .catch((error) => {
-        // setError(error);
-        console.log("error: failed to fetch all tickets", error);
-      });
-  }, []);
+    if (isViewOnly && shareToken) {
+      fetch(`${API_BASE}/api/concerts/share/${shareToken}`)
+        .then((response) => {
+          if (!response.ok) throw new Error("Share link not found");
+          return response.json();
+        })
+        .then((data) => {
+          setTickets(Array.isArray(data) ? data : []);
+        })
+        .catch(() => setTickets([]));
+    } else {
+      fetch(`${API_BASE}/api/concerts/all_tickets`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setTickets(data);
+          } else {
+            setTickets([]);
+          }
+        })
+        .catch((error) => {
+          console.log("error: failed to fetch all tickets", error);
+        });
+    }
+  }, [isViewOnly, shareToken]);
 
   const handleDeleteTicket = async (ticketId: string) => {
     const confirm = window.confirm(
@@ -150,7 +164,47 @@ function TicketsPage() {
 
   const onToggleForm = () => {
     setIsFormVisible(!isFormVisible);
-  }
+  };
+
+  const createShareLink = async (ticketIds: string[]) => {
+    const res = await fetch(`${API_BASE}/api/concerts/share`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ticketIds }),
+    });
+    if (!res.ok) throw new Error("Failed to create share link");
+    const { token } = await res.json();
+    return `${window.location.origin}/tickets/share/${token}`;
+  };
+
+  const handleShare = async () => {
+    const ids = filteredAndSortedTickets.map((t) => t._id);
+    if (ids.length === 0) {
+      window.alert("Add at least one concert to share.");
+      return;
+    }
+    try {
+      const url = await createShareLink(ids);
+      await navigator.clipboard.writeText(url);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2500);
+    } catch (err) {
+      console.error(err);
+      window.alert("Could not create share link. Try again.");
+    }
+  };
+
+  const handleShareTicket = async (ticketId: string) => {
+    try {
+      const url = `${window.location.origin}/concert/${ticketId}`;
+      await navigator.clipboard.writeText(url);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2500);
+    } catch (err) {
+      console.error(err);
+      window.alert("Could not copy link. Try again.");
+    }
+  };
 
   return (
     <>
@@ -335,15 +389,17 @@ function TicketsPage() {
 
       <div className={`tickets-container ${viewMode === "table" ? "table-view" : ""}`}>
         {viewMode === "grid" ? (
-          <div className="ticket-list">
+            <div className="ticket-list">
             {filteredAndSortedTickets.map((ticket) => (
               <div key={ticket._id}>
                 <ConcertTicket
                   {...ticket}
                   onDelete={handleDeleteTicket}
                   onSave={handleSaveTicket}
+                  onShare={handleShareTicket}
                   existingVenues={uniqueVenues}
                   existingGenres={uniqueGenres}
+                  isViewOnly={isViewOnly}
                 />
               </div>
             ))}
@@ -376,20 +432,24 @@ function TicketsPage() {
                     <td>{ticket.section || "—"}</td>
                     <td>{ticket.seatInfo || "—"}</td>
                     <td className="table-actions" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        className="table-action-btn"
-                        onClick={() => setEditingTicketId(ticket._id)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        className="table-action-btn delete"
-                        onClick={() => handleDeleteTicket(ticket._id)}
-                      >
-                        Delete
-                      </button>
+                      {!isViewOnly && (
+                        <>
+                          <button
+                            type="button"
+                            className="table-action-btn"
+                            onClick={() => setEditingTicketId(ticket._id)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="table-action-btn delete"
+                            onClick={() => handleDeleteTicket(ticket._id)}
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))}
