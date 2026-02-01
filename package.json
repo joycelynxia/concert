@@ -1,9 +1,1 @@
-{
-  "main": "frontend/main.js",
-"scripts": {
-  "start:electron": "electron frontend/main.js"
-},
-  "devDependencies": {
-    "electron": "^36.2.1"
-  }
-}
+{}
