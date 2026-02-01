@@ -1,8 +1,15 @@
 /**
  * Backend API base URL.
- * - Local: set REACT_APP_API_URL in .env or leave unset (defaults to http://127.0.0.1:4000).
- * - Deployed (Vercel): set REACT_APP_API_URL in Vercel env to your Railway backend URL
- *   (e.g. https://your-app.railway.app) — no trailing slash.
+ * - Local: leave REACT_APP_API_URL unset (defaults to http://127.0.0.1:4000).
+ * - Deployed: set REACT_APP_API_URL to your Railway URL (with or without https://).
  */
-export const API_BASE =
-  process.env.REACT_APP_API_URL || "http://127.0.0.1:4000";
+function getApiBase(): string {
+  const raw = process.env.REACT_APP_API_URL || "http://127.0.0.1:4000";
+  const trimmed = raw.trim().replace(/\/+$/, "");
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+  return `https://${trimmed}`;
+}
+
+export const API_BASE = getApiBase();
