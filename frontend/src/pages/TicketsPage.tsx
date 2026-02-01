@@ -213,7 +213,7 @@ function TicketsPage() {
           <h1 className="page-title">my concerts</h1>
           <button
             type="button"
-            className="add-ticket-button"
+            className="account-btn account-btn-primary add-ticket-button"
             onClick={onToggleForm}
             aria-label="Add concert"
           >
@@ -436,14 +436,14 @@ function TicketsPage() {
                         <>
                           <button
                             type="button"
-                            className="table-action-btn"
+                            className="account-btn account-btn-outline account-btn-sm table-action-btn"
                             onClick={() => setEditingTicketId(ticket._id)}
                           >
                             Edit
                           </button>
                           <button
                             type="button"
-                            className="table-action-btn delete"
+                            className="account-btn account-btn-danger account-btn-sm table-action-btn"
                             onClick={() => handleDeleteTicket(ticket._id)}
                           >
                             Delete

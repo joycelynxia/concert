@@ -319,18 +319,6 @@
   .form-buttons button {
     flex: 1;
     margin: 0 0.5rem;
-    padding: 0.6rem 1rem;
-    font-size: 1rem;
-    border: none;
-    border-radius: 8px;
-    background-color: #4a90e2;
-    color: #fff;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .form-buttons button:hover {
-    background-color: #357ab8;
   }
   
   .close-button {
@@ -406,24 +394,7 @@
     cursor: default;
   }
 
-  .table-action-btn {
-    padding: 0.35rem 0.6rem;
-    font-size: 0.85rem;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background: white;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  .table-action-btn:hover {
-    background: #e8e8e8;
-  }
-
-  .table-action-btn.delete:hover {
-    background: #ffe5e5;
-    border-color: #f66262;
-  }
+  /* .table-action-btn uses global .account-btn */
   
   .confirm-delete-container {
     margin: 1rem 0;

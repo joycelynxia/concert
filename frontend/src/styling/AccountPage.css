@@ -69,11 +69,6 @@
   letter-spacing: 0.15em;
 }
 
-.account-btn-sm {
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-}
-
 .account-password-form {
   margin-top: 0;
 }
@@ -207,91 +202,6 @@
   border-radius: 8px;
 }
 
-.account-btn {
-  padding: 0.75rem 1.25rem;
-  font-size: 1rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-  align-self: flex-start;
-}
-
-.account-btn-primary {
-  background: #7caadc;
-  color: #fff;
-}
-
-.account-btn-primary:hover:not(:disabled) {
-  background: #5a92cc;
-}
-
-.account-btn-primary:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-.account-btn-primary:disabled {
-  background: #a8c8e8;
-  cursor: not-allowed;
-}
-
-.account-btn-outline {
-  background: #fff;
-  color: #666;
-  border: 1px solid #ccc;
-}
-
-.account-btn-outline:hover {
-  background: #f5f5f5;
-  border-color: #999;
-}
-
-.account-btn-secondary {
-  background: #fff;
-  color: #d9534f;
-  border: 1px solid #d9534f;
-}
-
-.account-btn-secondary:hover {
-  background: #fef2f2;
-  color: #c9302c;
-  border-color: #c9302c;
-}
-
-.account-form-actions {
-  display: flex;
-  justify-content:space-between;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
 .account-section-danger .account-section-title {
   color: #c9302c;
-}
-
-.account-btn-danger {
-  background: #c9302c;
-  color: #fff;
-}
-
-.account-btn-danger:hover:not(:disabled) {
-  background: #a82823;
-}
-
-.account-btn-danger:disabled {
-  background: #e8a4a0;
-  cursor: not-allowed;
-}
-
-.account-btn-danger-outline {
-  background: #fff;
-  color: #c9302c;
-  border: 1px solid #c9302c;
-}
-
-.account-btn-danger-outline:hover {
-  background: #fef2f2;
-  color: #a82823;
-  border-color: #a82823;
 }

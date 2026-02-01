@@ -113,10 +113,11 @@ const renderEditForm = () =>
             <div className="has-entry"></div>
           </div>
           {!isViewOnly && (
-            <div className="other-buttons" onClick={(e) => e.stopPropagation()}>
-              <button type="button" onClick={() => setIsEditing(true)}>edit</button>
+            <div className="other-buttons account-form-actions" onClick={(e) => e.stopPropagation()}>
+              <button type="button" className="account-btn account-btn-outline account-btn-sm" onClick={() => setIsEditing(true)}>edit</button>
               <button
                 type="button"
+                className="account-btn account-btn-primary account-btn-sm"
                 onClick={() => onShare?.(_id)}
                 aria-label="Copy link to concert experience (media, notes, playlists)"
                 title="Copy link to concert experience page"

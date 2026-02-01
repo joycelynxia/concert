@@ -40,21 +40,17 @@
   align-items: center;
 }
 
-.persistent-player-minimize,
-.persistent-player-close {
+/* Override account-btn for dark player bar */
+.persistent-player .account-btn-outline {
   background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.8);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
-.persistent-player-minimize:hover,
-.persistent-player-close:hover {
-  background: rgba(255, 255, 255, 0.1);
+.persistent-player .account-btn-outline:hover {
+  background: rgba(255, 255, 255, 0.15);
   color: white;
+  border-color: rgba(255, 255, 255, 0.8);
 }
 
 .persistent-player-content {

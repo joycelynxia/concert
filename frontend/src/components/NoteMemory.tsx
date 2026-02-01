@@ -30,11 +30,11 @@ const NoteMemory: React.FC<NoteMemoryProps> = ({
               rows={5}
               className="w-full mb-2 p-2 border border-gray-300 rounded"
             />
-            <div className="flex gap-2">
-              <button onClick={onSave} className="bg-green-500 text-white px-2 py-1 rounded">
+            <div className="flex gap-2 account-form-actions">
+              <button type="button" onClick={onSave} className="account-btn account-btn-primary account-btn-sm">
                 Save
               </button>
-              <button onClick={onCancelEdit} className="bg-gray-400 text-white px-2 py-1 rounded">
+              <button type="button" onClick={onCancelEdit} className="account-btn account-btn-outline account-btn-sm">
                 Cancel
               </button>
             </div>
@@ -42,10 +42,11 @@ const NoteMemory: React.FC<NoteMemoryProps> = ({
         ) : (
           <>
             <p className="whitespace-pre-wrap">{memory.content}</p>
-            <div className="flex gap-2 mt-2">
+            <div className="flex gap-2 mt-2 account-form-actions">
               <button
+                type="button"
                 onClick={() => onStartEdit(memory._id, memory.content)}
-                className="bg-blue-500 text-white px-2 py-1 rounded"
+                className="account-btn account-btn-primary account-btn-sm"
               >
                 Edit
               </button>

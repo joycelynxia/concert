@@ -23,7 +23,7 @@ const SimpleSlideshow: React.FC<SlideshowProps> = ({ media }) => {
 
   return (
     <div className="slideshow-container">
-      <button onClick={goPrev} className="slideshow-btn">‹</button>
+      <button type="button" onClick={goPrev} className="account-btn account-btn-outline account-btn-sm slideshow-btn">‹</button>
       
       <div className="media-wrapper">
         {currentItem.type === 'photo' ? (
@@ -41,7 +41,7 @@ const SimpleSlideshow: React.FC<SlideshowProps> = ({ media }) => {
         )}
       </div>
 
-      <button onClick={goNext} className="slideshow-btn">›</button>
+      <button type="button" onClick={goNext} className="account-btn account-btn-outline account-btn-sm slideshow-btn">›</button>
     </div>
   );
 };

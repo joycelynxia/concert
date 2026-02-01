@@ -23,14 +23,16 @@ export const PersistentSetlistPlayer: React.FC = () => {
         <span className="persistent-player-label">Setlist</span>
         <div className="persistent-player-actions">
           <button
-            className="persistent-player-minimize"
+            type="button"
+            className="account-btn account-btn-outline account-btn-sm persistent-player-minimize"
             onClick={() => setIsMinimized((p) => !p)}
             aria-label={isMinimized ? "Expand" : "Minimize"}
           >
             {isMinimized ? "▲" : "▼"}
           </button>
           <button
-            className="persistent-player-close"
+            type="button"
+            className="account-btn account-btn-outline account-btn-sm persistent-player-close"
             onClick={clearPlaylists}
             aria-label="Close"
           >

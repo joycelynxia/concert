@@ -156,7 +156,7 @@ function AuthPage() {
 
           {error && <p className="auth-error">{error}</p>}
 
-          <button type="submit" className="auth-submit-btn" disabled={isLoading}>
+          <button type="submit" className="account-btn account-btn-primary auth-submit-btn" disabled={isLoading}>
             {isLoading
               ? "Please wait..."
               : mode === "login"

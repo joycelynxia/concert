@@ -218,17 +218,17 @@ const TicketForm: React.FC<TicketFormProps> = ({
               onChange={handleInputChange}
             />
           </label>
-          <div className="form-buttons">
+          <div className="form-buttons account-form-actions">
             {isEditing ? (
-              <button type="button" onClick={() => onDelete(concertDetails._id)}>
+              <button type="button" className="account-btn account-btn-danger" onClick={() => onDelete(concertDetails._id)}>
                 Delete
               </button>
             ) : (
-              <button type="button" onClick={onCancel}>
+              <button type="button" className="account-btn account-btn-outline" onClick={onCancel}>
                 Cancel
               </button>
             )}
-            <button type="submit">Save</button>
+            <button type="submit" className="account-btn account-btn-primary">Save</button>
           </div>
         </form>
       </div>

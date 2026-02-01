@@ -236,11 +236,12 @@ const ConcertExpPage: React.FC = () => {
       {editMode ? (
         <>
           <button
+            type="button"
             onClick={() => {
               setEditMode(false);
               setEditedNote(note?.content || "");
             }}
-            className="button cancel-button"
+            className="account-btn account-btn-outline cancel-button"
           >
             Cancel
           </button>
@@ -332,11 +333,12 @@ const ConcertExpPage: React.FC = () => {
                 <></>
               ) : (
                 <button
+                  type="button"
                   onClick={() => {
                     selectedMediaIds.forEach((id) => handleDeleteMedia(id));
                     setSelectedMediaIds([]);
                   }}
-                  className="button delete-button"
+                  className="account-btn account-btn-danger delete-button"
                   disabled={selectedMediaIds.length === 0}
                 >
                   Delete Selected
@@ -357,8 +359,9 @@ const ConcertExpPage: React.FC = () => {
 
           <div className="save-button-wrapper">
             <button
+              type="button"
               onClick={handleSaveAll}
-              className="button save-button"
+              className="account-btn account-btn-primary save-button"
               disabled={loading}
             >
               {loading ? "Saving..." : "Save"}
@@ -380,6 +383,8 @@ const ConcertExpPage: React.FC = () => {
                   />
                 </label>
                 <button
+                  type="button"
+                  className="account-btn account-btn-primary account-btn-sm"
                   onClick={handleAddSpotifyPlaylist}
                   disabled={!newSpotifyPlaylistId.trim()}
                 >
@@ -397,6 +402,8 @@ const ConcertExpPage: React.FC = () => {
                   />
                 </label>
                 <button
+                  type="button"
+                  className="account-btn account-btn-primary account-btn-sm"
                   onClick={handleAddYoutubePlaylist}
                   disabled={!newYoutubePlaylistId.trim()}
                 >
@@ -408,24 +415,26 @@ const ConcertExpPage: React.FC = () => {
         </>
       ) : media.length === 0 && !note?.content ? (
         <button
+          type="button"
           onClick={() => {
             setEditMode(true);
             setEditedNote(note?.content || "");
             setNoteID(note?._id || "");
           }}
-          className="button"
+          className="account-btn account-btn-primary"
         >
           Add Experience
         </button>
       ) : (
         <>
           <button
+            type="button"
             onClick={() => {
               setEditMode(true);
               setEditedNote(note?.content || "");
               setNoteID(note?._id || "");
             }}
-            className="button edit-button"
+            className="account-btn account-btn-primary edit-button"
           >
             Edit
           </button>

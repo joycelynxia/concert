@@ -78,7 +78,7 @@ const ConcertMemoryUploader: React.FC = () => {
         />
       </div>
 
-      <button style={{ marginTop: '1rem' }} onClick={handleUpload}>
+      <button type="button" className="account-btn account-btn-primary" style={{ marginTop: '1rem' }} onClick={handleUpload}>
         Save Memories
       </button>
     </div>

@@ -3,6 +3,10 @@ form {
   overflow-y: scroll;
 }
 
+.form-buttons {
+  margin-top: 1.25rem;
+}
+
 input[type="text"], input[type="date"],
 textarea {
   width: 100%;       /* take full width of parent */

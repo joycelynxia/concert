@@ -119,28 +119,6 @@
 
 .auth-submit-btn {
   width: 100%;
-  padding: 0.85rem 1rem;
-  font-size: 1rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  background: #7caadc;
-  color: #fff;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-}
-
-.auth-submit-btn:hover:not(:disabled) {
-  background: #5a92cc;
-}
-
-.auth-submit-btn:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-.auth-submit-btn:disabled {
-  background: #a8c8e8;
-  cursor: not-allowed;
 }
 
 .auth-footer {

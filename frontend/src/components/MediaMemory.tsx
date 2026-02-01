@@ -21,10 +21,11 @@ const MediaMemory: React.FC<MediaMemoryProps> = ({ memory, onDelete}) => {
                     Your browser does not support the video tag.
                 </video>
             )}
-            <button 
-                className="mt-2 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+            <button
+                type="button"
+                className="account-btn account-btn-danger account-btn-sm mt-2"
                 onClick={() => onDelete(memory._id)}
-                >
+            >
                 delete
             </button>
         </div>
