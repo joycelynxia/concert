@@ -1,0 +1,10 @@
+# Railway config for backend service.
+# In the Railway dashboard, set Root Directory to "backend" for this service.
+
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "node index.js"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10

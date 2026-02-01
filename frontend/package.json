@@ -37,6 +37,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "start:127": "HOST=127.0.0.1 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

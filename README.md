@@ -55,6 +55,24 @@ If `REACT_APP_API_URL` is not set, the frontend falls back to `http://127.0.0.1:
 - Ensure `MONGO_URI`, `JWT_SECRET`, and any other env vars are set in Railway.
 - The backend CORS is set to allow your Vercel origin; if you use a custom domain, you may need to allow it explicitly in `backend/index.js` (e.g. add your Vercel URL to `origin`).
 
+## Testing locally without AWS (avoid S3 storage usage)
+
+To test uploads and media locally **without using AWS S3** (so you don’t run out of storage or incur usage):
+
+1. **Don’t set AWS env vars**  
+   In your local `backend/.env`, omit (or comment out) `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_S3_BUCKET`.  
+   The backend will use **local disk storage** under `backend/uploads/photos` and `backend/uploads/videos`. Uploaded files are served at `/uploads/...` and are already in `.gitignore`.
+
+2. **Or force local storage**  
+   If your `.env` has AWS credentials for production but you want local runs to skip S3, set:
+   ```bash
+   USE_LOCAL_STORAGE=true
+   ```
+   in `backend/.env`. The backend will then use local disk even when AWS vars are present.
+
+3. **Check usage in production**  
+   In the [AWS S3 console](https://s3.console.aws.amazon.com/) → your bucket → **Metrics**, or [Billing](https://console.aws.amazon.com/billing/) → **Bills** → **S3**, you can monitor storage and requests.
+
 ## Learn More
 
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).

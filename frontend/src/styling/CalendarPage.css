@@ -49,11 +49,21 @@
 
   .calendar-list-header {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 12px;
+    text-align: left;
+    vertical-align: middle;
+    gap: 5px;
     margin-bottom: 10px;
+  }
+.calendar-list-header-btn {
+  align-self: center;
+}
+  .calendar-list-header .account-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
   }
 
   .calendar-list-header h3 {

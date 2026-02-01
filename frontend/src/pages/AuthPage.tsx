@@ -45,19 +45,36 @@ function AuthPage() {
         body: JSON.stringify(body),
       });
 
-      const data = await response.json();
+      let data: { token?: string; user?: unknown; message?: string } = {};
+      try {
+        data = await response.json();
+      } catch {
+        const status = response.status;
+        const msg =
+          status === 404
+            ? "API not found (404). Check that REACT_APP_API_URL points to your backend, not the frontend."
+            : response.ok
+              ? "Invalid response from server"
+              : `Login failed (${status})`;
+        setError(msg);
+        return;
+      }
 
       if (response.ok) {
-        localStorage.setItem("token", data.token);
+        localStorage.setItem("token", data.token!);
         if (data.user) {
           localStorage.setItem("user", JSON.stringify(data.user));
         }
         navigate("/tickets");
       } else {
-        setError(data.message || "Something went wrong");
+        setError(
+          response.status === 404
+            ? "API not found (404). Check that REACT_APP_API_URL points to your backend, not the frontend."
+            : data.message || "Something went wrong"
+        );
       }
     } catch (err) {
-      setError("Unable to connect to the server");
+      setError("Unable to connect to the server. Is the backend running?");
     } finally {
       setIsLoading(false);
     }

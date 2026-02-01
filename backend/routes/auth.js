@@ -8,12 +8,26 @@ require("dotenv").config();
 
 const User = require("../models/User");
 
+// Health check – confirms auth router is mounted (GET /api/auth)
+router.get("/", (req, res) => res.json({ ok: true, message: "auth router loaded" }));
 
+// Normalize email for consistent lookup and storage
+function normalizeEmail(email) {
+  return typeof email === "string" ? email.trim().toLowerCase() : "";
+}
+
+// Find user by email (case-insensitive so login works regardless of how email was stored)
+function findUserByEmail(email) {
+  if (!email) return null;
+  const escaped = email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return User.findOne({ email: new RegExp(`^${escaped}$`, "i") });
+}
 
 // Email/password signup
 router.post("/signup", async (req, res) => {
   try {
-    const { email, password, name } = req.body;
+    const { email: rawEmail, password, name } = req.body;
+    const email = normalizeEmail(rawEmail);
     if (!email || !password || !name) {
       return res.status(400).json({ message: "Email, password, and name are required" });
     }
@@ -48,15 +62,15 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-// Email/password login
-router.post("/", async (req, res) => {
+async function handleLogin(req, res) {
   try {
-    const { email, password } = req.body;
+    const { email: rawEmail, password } = req.body;
+    const email = normalizeEmail(rawEmail);
     if (!email || !password) {
       return res.status(400).json({ message: "Email and password are required" });
     }
 
-    const user = await User.findOne({ email });
+    const user = await findUserByEmail(email);
     if (!user || !user.password) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
@@ -77,7 +91,11 @@ router.post("/", async (req, res) => {
     console.error("Login error:", err);
     res.status(500).json({ message: "Failed to log in" });
   }
-});
+}
+
+// Email/password login (POST /api/auth and POST /api/auth/login)
+router.post("/", handleLogin);
+router.post("/login", handleLogin);
 
 // Change password - requires authenticated user
 router.post("/change-password", async (req, res) => {

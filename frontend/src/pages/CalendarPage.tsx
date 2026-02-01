@@ -106,7 +106,7 @@ const CalendarPage: React.FC = () => {
               <h3>Concerts on {format(selectedDate, "PPP")}</h3>
               <button
                 type="button"
-                className="account-btn account-btn-outline account-btn-sm"
+                className="account-btn account-btn-outline account-btn-sm calendar-list-header-btn"
                 onClick={() => setSelectedDate(null)}
               >
                 Show upcoming & past
