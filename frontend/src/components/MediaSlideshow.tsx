@@ -1,6 +1,7 @@
 // SimpleSlideshow.tsx
 import { useState } from 'react';
 import { ConcertMemory } from 'types/types';
+import { API_BASE } from '../config/api';
 import '../styling/Slideshow.css'
 interface SlideshowProps {
   media: ConcertMemory[];
@@ -18,8 +19,7 @@ const SimpleSlideshow: React.FC<SlideshowProps> = ({ media }) => {
   if (total === 0) return <p>No media available.</p>;
 
   const currentItem = mediaItems[current];
-  const apiBase = process.env.REACT_APP_API_URL || 'http://127.0.0.1:4000';
-  const src = currentItem.content.startsWith('http') ? currentItem.content : `${apiBase}${currentItem.content}`;
+  const src = currentItem.content.startsWith('http') ? currentItem.content : `${API_BASE}${currentItem.content}`;
 
   return (
     <div className="slideshow-container">

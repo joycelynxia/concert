@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { ConcertDetails, ConcertMemory } from "types/types";
 import SimpleSlideshow from "../components/MediaSlideshow";
+import { API_BASE } from "../config/api";
 import "../styling/ConcertExp.css";
 import Linkify from "react-linkify";
 import { ExternalLink } from "lucide-react";
@@ -34,14 +35,14 @@ const ConcertExpPage: React.FC = () => {
   useEffect(() => {
     if (!id) return;
 
-    fetch(`http://127.0.0.1:4000/api/upload/get/${id}`)
+    fetch(`${API_BASE}/api/upload/get/${id}`)
       .then((res) => res.json())
       .then((data) =>
         Array.isArray(data) ? setMemories(data) : setMemories([])
       )
       .catch(() => setMemories([]));
 
-    fetch(`http://127.0.0.1:4000/api/concerts/ticket/${id}`)
+    fetch(`${API_BASE}/api/concerts/ticket/${id}`)
       .then((res) => res.json())
       .then((data) => {
         setConcertDetails(data);
@@ -85,7 +86,7 @@ const ConcertExpPage: React.FC = () => {
 
     if (noteID) {
       try {
-        const res = await fetch(`http://127.0.0.1:4000/api/upload/${noteID}`, {
+        const res = await fetch(`${API_BASE}/api/upload/${noteID}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ content: editedNote }),
@@ -101,7 +102,7 @@ const ConcertExpPage: React.FC = () => {
     }
 
     try {
-      const res = await fetch(`http://127.0.0.1:4000/api/upload/${id}`, {
+      const res = await fetch(`${API_BASE}/api/upload/${id}`, {
         method: "POST",
         body: formData,
       });
@@ -113,7 +114,7 @@ const ConcertExpPage: React.FC = () => {
       setPreviewUrls([]);
 
       const refreshed = await fetch(
-        `http://127.0.0.1:4000/api/upload/get/${id}`
+        `${API_BASE}/api/upload/get/${id}`
       );
       const updatedMemories = await refreshed.json();
       setMemories(Array.isArray(updatedMemories) ? updatedMemories : []);
@@ -129,7 +130,7 @@ const ConcertExpPage: React.FC = () => {
 
     try {
       const res = await fetch(
-        `http://127.0.0.1:4000/api/upload/${id}/${mediaId}`,
+        `${API_BASE}/api/upload/${id}/${mediaId}`,
         {
           method: "DELETE",
         }
@@ -151,7 +152,7 @@ const ConcertExpPage: React.FC = () => {
     if (!id || !newSpotifyPlaylistId) return;
     try {
       const res = await fetch(
-        `http://127.0.0.1:4000/api/concerts/${id}/playlist`,
+        `${API_BASE}/api/concerts/${id}/playlist`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -174,7 +175,7 @@ const ConcertExpPage: React.FC = () => {
     if (!id || !newYoutubePlaylistId) return;
     try {
       const res = await fetch(
-        `http://127.0.0.1:4000/api/concerts/${id}/youtube-playlist`,
+        `${API_BASE}/api/concerts/${id}/youtube-playlist`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -244,13 +245,13 @@ const ConcertExpPage: React.FC = () => {
                   >
                     {m.type === "photo" ? (
                       <img
-                        src={`http://127.0.0.1:4000${m.content}`}
+                        src={`${API_BASE}${m.content}`}
                         alt="memory"
                       />
                     ) : (
                       <video
                         controls
-                        src={`http://127.0.0.1:4000${m.content}`}
+                        src={`${API_BASE}${m.content}`}
                       />
                     )}
                   </li>

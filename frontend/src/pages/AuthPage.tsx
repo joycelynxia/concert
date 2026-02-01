@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE } from "../config/api";
 import "../styling/AuthPage.css";
 
 type AuthMode = "login" | "signup";
@@ -38,7 +39,7 @@ function AuthPage() {
           ? { email, password }
           : { email, password, name };
 
-      const response = await fetch(`http://127.0.0.1:4000${endpoint}`, {
+      const response = await fetch(`${API_BASE}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

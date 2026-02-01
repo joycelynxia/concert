@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
+import { API_BASE } from "../config/api";
 import "../styling/CalendarPage.css";
 import { format } from "date-fns";
 import { ConcertDetails } from "types/types";
@@ -30,7 +31,7 @@ const CalendarPage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:4000/api/concerts/all_tickets")
+    fetch(`${API_BASE}/api/concerts/all_tickets`)
       .then((res) => res.json())
       .then((data) => {
         setConcerts(Array.isArray(data) ? data : []);

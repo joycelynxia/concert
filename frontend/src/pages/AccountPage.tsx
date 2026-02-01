@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE } from "../config/api";
 import "../styling/AccountPage.css";
 
 function AccountPage() {
@@ -57,7 +58,7 @@ function AccountPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://127.0.0.1:4000/api/auth/change-password", {
+      const response = await fetch(`${API_BASE}/api/auth/change-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -99,7 +100,7 @@ function AccountPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://127.0.0.1:4000/api/auth/delete-account", {
+      const response = await fetch(`${API_BASE}/api/auth/delete-account`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

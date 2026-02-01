@@ -5,6 +5,7 @@ import { ConcertDetails } from "types/types";
 import { useNavigate } from "react-router-dom";
 import { LayoutGrid, List, Search, SlidersHorizontal, ChevronDown } from "lucide-react";
 import { format } from "date-fns";
+import { API_BASE } from "../config/api";
 import "../styling/TicketsPage.css";
 
 type SortOption = "date" | "artist";
@@ -76,7 +77,7 @@ function TicketsPage() {
   }, [tickets, searchQuery, filterVenue, filterGenre, sortBy]);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:4000/api/concerts/all_tickets")
+    fetch(`${API_BASE}/api/concerts/all_tickets`)
       .then((response) => response.json())
       .then((data) => {
         if (Array.isArray(data)) {
@@ -99,7 +100,7 @@ function TicketsPage() {
     if (confirm) {
       try {
         const res = await fetch(
-          `http://127.0.0.1:4000/api/concerts/ticket/${ticketId}`,
+          `${API_BASE}/api/concerts/ticket/${ticketId}`,
           {
             method: "DELETE",
           }

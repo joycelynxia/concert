@@ -1,6 +1,7 @@
 import React from 'react';
 import { MemoryRouter } from 'react-router-dom';
 import { ConcertMemory } from 'types/types';
+import { API_BASE } from '../config/api';
 
 interface MediaMemoryProps {
     memory: ConcertMemory;
@@ -8,8 +9,7 @@ interface MediaMemoryProps {
 }
 
 const MediaMemory: React.FC<MediaMemoryProps> = ({ memory, onDelete}) => {
-    const apiBase = process.env.REACT_APP_API_URL || 'http://127.0.0.1:4000';
-    const src = memory.content.startsWith('http') ? memory.content : `${apiBase}${memory.content}`;
+    const src = memory.content.startsWith('http') ? memory.content : `${API_BASE}${memory.content}`;
 
     return (
         <div className='mb-4'>

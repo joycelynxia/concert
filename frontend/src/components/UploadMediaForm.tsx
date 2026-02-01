@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import { API_BASE } from '../config/api';
 
 const ConcertMemoryUploader: React.FC = () => {
   const { experienceId } = useParams(); // Get experience ID from route
@@ -30,7 +31,7 @@ const ConcertMemoryUploader: React.FC = () => {
 
     try {
       // Upload photos/videos
-      const fileRes = await axios.post(`/api/upload/${experienceId}`, formData, {
+      const fileRes = await axios.post(`${API_BASE}/api/upload/${experienceId}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -38,7 +39,7 @@ const ConcertMemoryUploader: React.FC = () => {
 
       // Save note if present
       if (note.trim()) {
-        await axios.post('/api/memories', {
+        await axios.post(`${API_BASE}/api/memories`, {
           experienceId,
           type: 'note',
           content: note

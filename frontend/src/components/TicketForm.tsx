@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ConcertDetails } from "types/types";
+import { API_BASE } from "../config/api";
 import "../styling/TicketForm.css";
 
 interface TicketFormProps {
@@ -54,8 +55,8 @@ const TicketForm: React.FC<TicketFormProps> = ({
     try {
       console.log(`editing: ${isEditing} | ${concertDetails._id}`);
       const url = isEditing
-        ? `http://127.0.0.1:4000/api/concerts/ticket/${concertDetails._id}`
-        : `http://127.0.0.1:4000/api/concerts/ticket`;
+        ? `${API_BASE}/api/concerts/ticket/${concertDetails._id}`
+        : `${API_BASE}/api/concerts/ticket`;
 
       const method = isEditing ? "PUT" : "POST";
       const headers: Record<string, string> = { "Content-Type": "application/json" };
