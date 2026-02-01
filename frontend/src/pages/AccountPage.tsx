@@ -254,10 +254,10 @@ function AccountPage() {
           </button>
         </section>
 
-        <section className="account-section account-section-danger">
+        <section className="account-section">
           <h2 className="account-section-title">Delete Account</h2>
           <p className="account-section-desc">
-            Permanently delete your account and all your data (concert tickets, memories, price watchers).
+            Permanently delete your account and all your data (concert tickets, memories, playlists).
             This cannot be undone.
           </p>
           {showDeleteConfirm ? (
