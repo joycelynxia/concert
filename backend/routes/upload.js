@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const ConcertExperience = require('../models/ConcertExperience');
 const ConcertMemory = require('../models/ConcertMemory');
 const ConcertTicket = require('../models/ConcertTicket');
-const { uploadToS3, deleteFromS3, isS3Enabled } = require('../utils/s3');
+const { uploadToS3, deleteFromS3, isS3Enabled, getPresignedPutUrl } = require('../utils/s3');
 const router = express.Router();
 
 const getUserIdFromRequest = (req) => {
@@ -65,6 +65,85 @@ const upload = multer({
   }
 });
 
+// --- Async / direct-to-S3 upload (no file buffering on server) ---
+
+/** POST /api/upload/presign - Get presigned URL for direct S3 upload */
+router.post('/presign', async (req, res) => {
+  if (!useS3) {
+    return res.status(400).json({ useLegacyUpload: true, message: 'Direct upload not available' });
+  }
+  try {
+    const { ticketId, filename, contentType } = req.body;
+    if (!ticketId || !filename || !contentType) {
+      return res.status(400).json({ error: 'ticketId, filename, contentType required' });
+    }
+    const ticket = await ConcertTicket.findById(ticketId);
+    if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+    const ownerError = await requireTicketOwner(req, res, ticket);
+    if (ownerError) return ownerError;
+
+    const ext = path.extname(filename) || (contentType.startsWith('video/') ? '.mp4' : '.jpg');
+    const key = `memories/${ticketId}/${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+    const result = await getPresignedPutUrl(key, contentType, 3600);
+    if (!result) return res.status(500).json({ error: 'Presign failed' });
+    res.json(result);
+  } catch (err) {
+    console.error('Presign error:', err);
+    res.status(500).json({ error: 'Failed to generate upload URL' });
+  }
+});
+
+/** POST /api/upload/complete - Register uploaded files after client uploads to S3 */
+router.post('/complete', async (req, res) => {
+  if (!useS3) {
+    return res.status(400).json({ error: 'Direct upload not configured' });
+  }
+  try {
+    const { ticketId, memories, note } = req.body;
+    if (!ticketId || !Array.isArray(memories)) {
+      return res.status(400).json({ error: 'ticketId and memories array required' });
+    }
+    const ticket = await ConcertTicket.findById(ticketId);
+    if (!ticket) return res.status(404).json({ error: 'Ticket not found' });
+    const ownerError = await requireTicketOwner(req, res, ticket);
+    if (ownerError) return ownerError;
+
+    const experience = await ConcertExperience.findOne({ concertTicket: ticketId });
+    if (!experience) return res.status(404).json({ error: 'Experience not found' });
+
+    const created = [];
+    for (const m of memories) {
+      const { type, key, contentType } = m;
+      if (!type || !key) continue;
+      const publicUrl = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com/${key}`;
+      const memory = new ConcertMemory({
+        experience: experience._id,
+        type: type === 'video' ? 'video' : 'photo',
+        content: publicUrl,
+        mimeType: contentType || 'application/octet-stream',
+      });
+      await memory.save();
+      experience.memories.push(memory._id);
+      created.push(memory);
+    }
+    if (note && note.trim()) {
+      const noteMemory = new ConcertMemory({
+        experience: experience._id,
+        type: 'note',
+        content: note.trim(),
+        mimeType: 'text/plain',
+      });
+      await noteMemory.save();
+      experience.memories.push(noteMemory._id);
+      created.push(noteMemory);
+    }
+    await experience.save();
+    res.status(200).json({ message: 'Memories added', memories: created });
+  } catch (err) {
+    console.error('Complete error:', err);
+    res.status(500).json({ error: 'Failed to complete upload' });
+  }
+});
 
 router.post('/:ticketId', upload.array('files', 10), async (req, res) => {
   const ticketId = req.params.ticketId;

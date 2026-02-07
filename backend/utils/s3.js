@@ -1,4 +1,5 @@
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 const region = process.env.AWS_REGION || "us-east-1";
 const bucket = process.env.AWS_S3_BUCKET;
@@ -18,6 +19,22 @@ const s3Client = isS3Configured
       },
     })
   : null;
+
+/**
+ * Generate a presigned PUT URL for direct client-to-S3 upload.
+ * Client uploads the file directly; backend never buffers it.
+ */
+async function getPresignedPutUrl(key, contentType, expiresIn = 3600) {
+  if (!s3Client) return null;
+  const command = new PutObjectCommand({
+    Bucket: bucket,
+    Key: key,
+    ContentType: contentType,
+  });
+  const uploadUrl = await getSignedUrl(s3Client, command, { expiresIn });
+  const publicUrl = `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
+  return { uploadUrl, key, publicUrl };
+}
 
 /**
  * Upload a file buffer to S3 and return the public URL
@@ -69,4 +86,5 @@ module.exports = {
   uploadToS3,
   deleteFromS3,
   isS3Enabled,
+  getPresignedPutUrl,
 };

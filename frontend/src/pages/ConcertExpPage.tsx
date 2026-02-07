@@ -127,17 +127,15 @@ const ConcertExpPage: React.FC = () => {
     if (!id) return;
     setLoading(true);
 
-    const formData = new FormData();
-    newFiles.forEach((file) => formData.append("files", file));
+    const authHeaders: Record<string, string> = {};
+    const token = localStorage.getItem("token");
+    if (token) authHeaders.Authorization = `Bearer ${token}`;
 
     if (noteID) {
       try {
-        const headers: Record<string, string> = { "Content-Type": "application/json" };
-        const token = localStorage.getItem("token");
-        if (token) headers.Authorization = `Bearer ${token}`;
         const res = await fetch(`${API_BASE}/api/upload/${noteID}`, {
           method: "PUT",
-          headers,
+          headers: { "Content-Type": "application/json", ...authHeaders },
           body: JSON.stringify({ content: editedNote }),
         });
         const data = await res.json();
@@ -146,34 +144,93 @@ const ConcertExpPage: React.FC = () => {
         alert("Error updating note");
         console.error(err);
       }
-    } else {
-      formData.append("note", editedNote);
     }
 
+    const uploadNote = !noteID ? editedNote : undefined;
+
     try {
-      const headers: Record<string, string> = {};
-      const token = localStorage.getItem("token");
-      if (token) headers.Authorization = `Bearer ${token}`;
-      const res = await fetch(`${API_BASE}/api/upload/${id}`, {
-        method: "POST",
-        headers,
-        body: formData,
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "upload failed");
+      if (newFiles.length > 0) {
+        // Try direct-to-S3 upload first (avoids backend memory usage)
+        const presignRes = await fetch(`${API_BASE}/api/upload/presign`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...authHeaders },
+          body: JSON.stringify({
+            ticketId: id,
+            filename: newFiles[0].name,
+            contentType: newFiles[0].type,
+          }),
+        });
+        const presignData = await presignRes.json();
+
+        if (presignRes.ok && presignData.uploadUrl) {
+          // Direct S3 upload flow
+          const memories: { type: string; key: string; contentType: string }[] = [];
+          for (const file of newFiles) {
+            const p = await fetch(`${API_BASE}/api/upload/presign`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", ...authHeaders },
+              body: JSON.stringify({
+                ticketId: id,
+                filename: file.name,
+                contentType: file.type,
+              }),
+            });
+            const { uploadUrl, key } = await p.json();
+            if (!p.ok || !uploadUrl) throw new Error("Failed to get upload URL");
+            const putRes = await fetch(uploadUrl, {
+              method: "PUT",
+              headers: { "Content-Type": file.type },
+              body: file,
+            });
+            if (!putRes.ok) throw new Error("Upload to storage failed");
+            const type = file.type.startsWith("video/") ? "video" : "photo";
+            memories.push({ type, key, contentType: file.type });
+          }
+          const completeRes = await fetch(`${API_BASE}/api/upload/complete`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", ...authHeaders },
+            body: JSON.stringify({ ticketId: id, memories, note: uploadNote }),
+          });
+          const completeData = await completeRes.json();
+          if (!completeRes.ok) throw new Error(completeData.error || "Failed to save");
+        } else if (presignData.useLegacyUpload) {
+          // Fallback: backend buffers files (local storage)
+          const formData = new FormData();
+          newFiles.forEach((file) => formData.append("files", file));
+          if (uploadNote) formData.append("note", uploadNote);
+          const res = await fetch(`${API_BASE}/api/upload/${id}`, {
+            method: "POST",
+            headers: authHeaders,
+            body: formData,
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "upload failed");
+        } else {
+          throw new Error(presignData.error || "Upload failed");
+        }
+      } else if (uploadNote && uploadNote.trim()) {
+        // Note only - lightweight FormData (no files)
+        const formData = new FormData();
+        formData.append("note", uploadNote);
+        const res = await fetch(`${API_BASE}/api/upload/${id}`, {
+          method: "POST",
+          headers: authHeaders,
+          body: formData,
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "upload failed");
+      }
 
       previewUrls.forEach((url) => URL.revokeObjectURL(url));
       setNewFiles([]);
       setEditMode(false);
       setPreviewUrls([]);
 
-      const refreshed = await fetch(
-        `${API_BASE}/api/upload/get/${id}`
-      );
+      const refreshed = await fetch(`${API_BASE}/api/upload/get/${id}`);
       const updatedMemories = await refreshed.json();
       setMemories(Array.isArray(updatedMemories) ? updatedMemories : []);
-    } catch (err: any) {
-      alert("Error saving experience: " + err.message);
+    } catch (err: unknown) {
+      alert("Error saving experience: " + (err instanceof Error ? err.message : "Unknown error"));
     } finally {
       setLoading(false);
     }

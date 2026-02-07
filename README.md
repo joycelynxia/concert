@@ -144,7 +144,39 @@ Frontend runs at `http://127.0.0.1:3000`.
 | POST   | `/api/concerts/ticket`     | Create ticket (auth) |
 | PUT    | `/api/concerts/ticket/:id` | Update ticket (auth) |
 | GET    | `/api/concerts/share/:token` | Shared tickets    |
-| POST   | `/api/upload/:ticketId`    | Upload media (auth) |
+| POST   | `/api/upload/:ticketId`    | Upload media (auth, legacy) |
+| POST   | `/api/upload/presign`      | Get presigned S3 URL (auth) |
+| POST   | `/api/upload/complete`     | Register S3 uploads (auth)  |
+
+## Async Media Upload (Production)
+
+Large files can crash the backend if buffered in memory. The app uses **direct-to-S3 uploads** when S3 is configured:
+
+1. Frontend requests a presigned PUT URL from the backend.
+2. Frontend uploads the file directly to S3 (no backend buffering).
+3. Frontend notifies the backend to create the memory record.
+
+When S3 is not configured (local disk), the legacy multipart upload flow is used.
+
+### S3 CORS for Direct Uploads
+
+If using direct uploads, configure CORS on your S3 bucket:
+
+1. AWS Console → S3 → your bucket → **Permissions** → **CORS**
+2. Add:
+
+```json
+[
+  {
+    "AllowedHeaders": ["*"],
+    "AllowedMethods": ["PUT", "GET", "HEAD"],
+    "AllowedOrigins": ["http://localhost:3000", "https://your-app.vercel.app"],
+    "ExposeHeaders": ["ETag"]
+  }
+]
+```
+
+Replace `your-app.vercel.app` with your actual frontend domain.
 
 ## Scripts
 
