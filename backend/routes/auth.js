@@ -97,7 +97,7 @@ async function handleLogin(req, res) {
 
     res.json({ token, user: { id: user._id, email: user.email, username: user.username } });
   } catch (err) {
-    console.error("Login error:", err);
+    console.error("Login error:", err.name, err.message);
     res.status(500).json({ message: "Failed to log in" });
   }
 }

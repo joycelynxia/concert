@@ -87,7 +87,7 @@ router.post("/ticket", async (req, res) => {
       section,
       setlist: formatSpotifyPlaylist(setlist) || undefined,
       youtubePlaylist: formatYoutubePlaylist(youtubePlaylist) || undefined,
-      priceCents,
+      priceCents: priceCents * 100,
       genre,
     });
 
@@ -153,7 +153,7 @@ router.put("/ticket/:id", async (req, res) => {
       ticket.youtubePlaylist,
       youtubePlaylist ? formatYoutubePlaylist(youtubePlaylist) : undefined
     );
-    ticket.priceCents = updateField(ticket.priceCents, priceCents);
+    ticket.priceCents = updateField(ticket.priceCents, priceCents * 100);
     ticket.genre = updateField(ticket.genre, genre);
 
     const updatedTicket = await ticket.save();
