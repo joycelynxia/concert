@@ -18,4 +18,11 @@ const ConcertTicketSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+ConcertTicketSchema.index({ user: 1, date: -1 });
+ConcertTicketSchema.index({
+  artist: "text",
+  tour: "text",
+  venue: "text",
+  genre: "text"
+});
 module.exports = mongoose.model("ConcertTicket", ConcertTicketSchema);

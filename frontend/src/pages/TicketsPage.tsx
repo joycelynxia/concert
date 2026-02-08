@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import TicketForm from "components/TicketForm";
 import ConcertTicket from "components/Ticket";
+import Pagination from "components/Pagination";
 import { ConcertDetails } from "types/types";
 import { useNavigate, useParams } from "react-router-dom";
 import { LayoutGrid, List, Search, SlidersHorizontal, ChevronDown } from "lucide-react";
@@ -40,6 +41,8 @@ function TicketsPage() {
   const [filterGenre, setFilterGenre] = useState<string>("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const filterPanelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -82,7 +85,7 @@ function TicketsPage() {
     });
     if (sortBy === "date") {
       list = [...list].sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
       );
     } else {
       list = [...list].sort((a, b) =>
@@ -91,6 +94,16 @@ function TicketsPage() {
     }
     return list;
   }, [tickets, searchQuery, filterVenue, filterGenre, sortBy]);
+
+  const totalPages = Math.ceil(filteredAndSortedTickets.length / itemsPerPage) || 1;
+  const paginatedTickets = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredAndSortedTickets.slice(start, start + itemsPerPage);
+  }, [filteredAndSortedTickets, currentPage, itemsPerPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, filterVenue, filterGenre, sortBy]);
 
   useEffect(() => {
     if (isViewOnly && shareToken) {
@@ -411,7 +424,7 @@ function TicketsPage() {
       <div className={`tickets-container ${viewMode === "table" ? "table-view" : ""}`}>
         {viewMode === "grid" ? (
             <div className="ticket-list">
-            {filteredAndSortedTickets.map((ticket) => {
+            {paginatedTickets.map((ticket) => {
               const canEdit = isLoggedIn && (ticket.user != null && String(ticket.user) === String(currentUserId));
               return (
                 <div key={ticket._id}>
@@ -444,7 +457,7 @@ function TicketsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredAndSortedTickets.map((ticket) => (
+                {paginatedTickets.map((ticket) => (
                   <tr
                     key={ticket._id}
                     onClick={() => navigate(`/concert/${ticket._id}`)}
@@ -484,6 +497,15 @@ function TicketsPage() {
               </tbody>
             </table>
           </div>
+        )}
+        {filteredAndSortedTickets.length > itemsPerPage && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={filteredAndSortedTickets.length}
+            itemsPerPage={itemsPerPage}
+            onPageChange={setCurrentPage}
+          />
         )}
       </div>
     </>

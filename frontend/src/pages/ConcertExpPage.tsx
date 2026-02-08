@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { ConcertDetails, ConcertMemory } from "types/types";
 import SimpleSlideshow from "../components/MediaSlideshow";
+import UploadProgressPopup, { UploadProgressState } from "../components/UploadProgressPopup";
 import { API_BASE } from "../config/api";
 import "../styling/ConcertExp.css";
 import Linkify from "react-linkify";
@@ -50,6 +51,12 @@ const ConcertExpPage: React.FC = () => {
   const [noteID, setNoteID] = useState("");
   const [newSpotifyPlaylistId, setNewSpotifyPlaylistId] = useState("");
   const [newYoutubePlaylistId, setNewYoutubePlaylistId] = useState("");
+  const [uploadProgress, setUploadProgress] = useState<UploadProgressState>({
+    visible: false,
+    current: 0,
+    total: 0,
+    phase: "uploading",
+  });
   useEffect(() => {
     if (!id) return;
 
@@ -68,17 +75,6 @@ const ConcertExpPage: React.FC = () => {
         setNewYoutubePlaylistId(data?.youtubePlaylist || "");
       })
       .catch(() => null);
-
-    // fetch(`http://127.0.0.1:4000/api/concerts/${id}/setlist`)
-    //   .then((res) => res.json())
-    //   .then((data) => {
-    //     if (data.setlist) {
-    //       setConcertDetails((prev) =>
-    //         prev ? { ...prev, setlist: data.setlist } : prev
-    //       );
-    //     }
-    //   })
-    //   .catch((err) => console.error("Failed to fetch playlist ID:", err));
   }, [id]);
 
   useEffect(() => {
@@ -126,11 +122,35 @@ const ConcertExpPage: React.FC = () => {
   const handleSaveAll = async () => {
     if (!id) return;
     setLoading(true);
+    const totalFiles = newFiles.length;
+    const showProgress = totalFiles > 0;
 
     const authHeaders: Record<string, string> = {};
     const token = localStorage.getItem("token");
     if (token) authHeaders.Authorization = `Bearer ${token}`;
 
+    const updateProgress = (current: number, fileName?: string) => {
+      if (showProgress) {
+        setUploadProgress({
+          visible: true,
+          current,
+          total: totalFiles,
+          fileName,
+          phase: "uploading",
+        });
+      }
+    };
+
+    const showCompleteAndClose = () => {
+      if (showProgress) {
+        setUploadProgress((p) => ({ ...p, phase: "complete" as const }));
+        setTimeout(() => {
+          setUploadProgress((p) => ({ ...p, visible: false }));
+        }, 1500);
+      }
+    };
+
+    // update note
     if (noteID) {
       try {
         const res = await fetch(`${API_BASE}/api/upload/${noteID}`, {
@@ -149,8 +169,10 @@ const ConcertExpPage: React.FC = () => {
     const uploadNote = !noteID ? editedNote : undefined;
 
     try {
+      setEditMode(false);
+
       if (newFiles.length > 0) {
-        // Try direct-to-S3 upload first (avoids backend memory usage)
+        // checks if S3 is enabled
         const presignRes = await fetch(`${API_BASE}/api/upload/presign`, {
           method: "POST",
           headers: { "Content-Type": "application/json", ...authHeaders },
@@ -162,10 +184,14 @@ const ConcertExpPage: React.FC = () => {
         });
         const presignData = await presignRes.json();
 
+        // if S3 is enabled, upload to S3
         if (presignRes.ok && presignData.uploadUrl) {
-          // Direct S3 upload flow
           const memories: { type: string; key: string; contentType: string }[] = [];
-          for (const file of newFiles) {
+          updateProgress(0, newFiles[0]?.name);
+
+          for (let i = 0; i < newFiles.length; i++) {
+            const file = newFiles[i];
+            // get presigned URL for direct S3 upload
             const p = await fetch(`${API_BASE}/api/upload/presign`, {
               method: "POST",
               headers: { "Content-Type": "application/json", ...authHeaders },
@@ -177,6 +203,8 @@ const ConcertExpPage: React.FC = () => {
             });
             const { uploadUrl, key } = await p.json();
             if (!p.ok || !uploadUrl) throw new Error("Failed to get upload URL");
+
+            // upload to S3
             const putRes = await fetch(uploadUrl, {
               method: "PUT",
               headers: { "Content-Type": file.type },
@@ -185,7 +213,9 @@ const ConcertExpPage: React.FC = () => {
             if (!putRes.ok) throw new Error("Upload to storage failed");
             const type = file.type.startsWith("video/") ? "video" : "photo";
             memories.push({ type, key, contentType: file.type });
+            updateProgress(i + 1, newFiles[i + 1]?.name);
           }
+          // complete upload - save memories to database
           const completeRes = await fetch(`${API_BASE}/api/upload/complete`, {
             method: "POST",
             headers: { "Content-Type": "application/json", ...authHeaders },
@@ -195,6 +225,7 @@ const ConcertExpPage: React.FC = () => {
           if (!completeRes.ok) throw new Error(completeData.error || "Failed to save");
         } else if (presignData.useLegacyUpload) {
           // Fallback: backend buffers files (local storage)
+          updateProgress(0, newFiles[0]?.name);
           const formData = new FormData();
           newFiles.forEach((file) => formData.append("files", file));
           if (uploadNote) formData.append("note", uploadNote);
@@ -205,6 +236,7 @@ const ConcertExpPage: React.FC = () => {
           });
           const data = await res.json();
           if (!res.ok) throw new Error(data.error || "upload failed");
+          updateProgress(totalFiles, undefined);
         } else {
           throw new Error(presignData.error || "Upload failed");
         }
@@ -223,8 +255,8 @@ const ConcertExpPage: React.FC = () => {
 
       previewUrls.forEach((url) => URL.revokeObjectURL(url));
       setNewFiles([]);
-      setEditMode(false);
       setPreviewUrls([]);
+      showCompleteAndClose();
 
       const refreshed = await fetch(`${API_BASE}/api/upload/get/${id}`);
       const updatedMemories = await refreshed.json();
@@ -243,6 +275,7 @@ const ConcertExpPage: React.FC = () => {
       const headers: Record<string, string> = {};
       const token = localStorage.getItem("token");
       if (token) headers.Authorization = `Bearer ${token}`;
+      
       const res = await fetch(
         `${API_BASE}/api/upload/${id}/${mediaId}`,
         {
@@ -250,6 +283,7 @@ const ConcertExpPage: React.FC = () => {
           headers: Object.keys(headers).length ? headers : undefined,
         }
       );
+
       if (!res.ok) throw new Error("Failed to delete");
       setMemories((prev) => prev.filter((m) => m._id !== mediaId));
     } catch (err) {
@@ -316,212 +350,197 @@ const ConcertExpPage: React.FC = () => {
   };
 
   return (
-    <div className="exp-container">
-      <div className="concert-exp-header">
-        {/* <button className="back-button" onClick={returnToTickets}>
+    <>
+      <div className="exp-container">
+        <div className="concert-exp-header">
+          {/* <button className="back-button" onClick={returnToTickets}>
           &lt;
         </button> */}
-        <h1 className="title">
-          {concertDetails?.artist}: {concertDetails?.tour}
-        </h1>
-      </div>
-      {editMode && canEdit ? (
-        <>
-          <button
-            type="button"
-            onClick={() => {
-              setEditMode(false);
-              setEditedNote(note?.content || "");
-            }}
-            className="account-btn account-btn-outline cancel-button"
-          >
-            Cancel
-          </button>
-
-          <div className="flex-row">
-            <div className="media-section">
-              <h2 className="section-title">Media</h2>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept="image/*,video/*"
-                onChange={handleFileChange}
-                className="upload-input-hidden"
-              />
-              <div
-                className="upload-dropzone"
-                onDrop={handleDrop}
-                onDragOver={handleDragOver}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <ImagePlus size={32} strokeWidth={1.5} className="upload-icon" />
-                <p className="upload-text">
-                  Drop photos or videos here, or click to browse
-                </p>
-                <span className="upload-hint">Supports images and videos</span>
-              </div>
-
-              {previewUrls.length > 0 && (
-                <div className="preview-section">
-                  <p className="preview-label">
-                    <Upload size={16} /> New files ({previewUrls.length})
-                  </p>
-                  <div className="preview-grid">
-                    {previewUrls.map((url, idx) => {
-                      const file = newFiles[idx];
-                      const isVideo = file?.type.startsWith("video/");
-                      return (
-                        <div key={idx} className="preview-item">
-                          {isVideo ? (
-                            <video src={url} muted />
-                          ) : (
-                            <img src={url} alt={`preview-${idx}`} />
-                          )}
-                          <button
-                            type="button"
-                            className="preview-remove"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeNewFile(idx);
-                            }}
-                            aria-label="Remove"
-                          >
-                            <X size={14} />
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              <ul className="media-grid">
-                {media.map((m) => (
-                  <li
-                    key={m._id}
-                    className={`media-item ${
-                      selectedMediaIds.includes(m._id) ? "selected" : ""
-                    }`}
-                    onClick={() => toggleSelectMedia(m._id)}
-                  >
-                    {m.type === "photo" ? (
-                      <img
-                        src={`${API_BASE}${m.content}`}
-                        alt="memory"
-                      />
-                    ) : (
-                      <video
-                        controls
-                        src={`${API_BASE}${m.content}`}
-                      />
-                    )}
-                  </li>
-                ))}
-              </ul>
-
-              {selectedMediaIds.length === 0 ? (
-                <></>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    selectedMediaIds.forEach((id) => handleDeleteMedia(id));
-                    setSelectedMediaIds([]);
-                  }}
-                  className="account-btn account-btn-danger delete-button"
-                  disabled={selectedMediaIds.length === 0}
-                >
-                  Delete Selected
-                </button>
-              )}
-            </div>
-
-            <div className="note-section">
-              <h2 className="section-title">Concert Note</h2>
-              <textarea
-                rows={10}
-                cols={50}
-                value={editedNote}
-                onChange={(e) => setEditedNote(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="save-button-wrapper">
+          <h1 className="title">
+            {concertDetails?.artist}: {concertDetails?.tour}
+          </h1>
+        </div>
+        {editMode && canEdit ? (
+          <>
             <button
               type="button"
-              onClick={handleSaveAll}
-              className="account-btn account-btn-primary save-button"
-              disabled={loading}
+              onClick={() => {
+                setEditMode(false);
+                setEditedNote(note?.content || "");
+              }}
+              className="account-btn account-btn-outline cancel-button"
             >
-              {loading ? "Saving..." : "Save"}
+              Cancel
             </button>
-          </div>
 
-          {/* Setlist - when editing */}
-          <section className="setlist-section">
-            <h3 className="add-playlist-title">Setlist</h3>
-            <div className="add-playlist-form">
-              <div className="playlist-input-row">
-                <label>
-                  Spotify playlist URL:
-                  <input
-                    type="text"
-                    placeholder="https://open.spotify.com/playlist/..."
-                    value={newSpotifyPlaylistId}
-                    onChange={(e) => setNewSpotifyPlaylistId(e.target.value)}
-                  />
-                </label>
-                <button
-                  type="button"
-                  className="account-btn account-btn-primary account-btn-sm"
-                  onClick={handleAddSpotifyPlaylist}
-                  disabled={!newSpotifyPlaylistId.trim()}
+            <div className="flex-row">
+              <div className="media-section">
+                <h2 className="section-title">Media</h2>
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*,video/*"
+                  onChange={handleFileChange}
+                  className="upload-input-hidden"
+                />
+                <div
+                  className="upload-dropzone"
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onClick={() => fileInputRef.current?.click()}
                 >
-                  {concertDetails?.setlist ? "Update" : "Add"} Spotify
-                </button>
+                  <ImagePlus size={32} strokeWidth={1.5} className="upload-icon" />
+                  <p className="upload-text">
+                    Drop photos or videos here, or click to browse
+                  </p>
+                  <span className="upload-hint">Supports images and videos</span>
+                </div>
+
+                {previewUrls.length > 0 && (
+                  <div className="preview-section">
+                    <p className="preview-label">
+                      <Upload size={16} /> New files ({previewUrls.length})
+                    </p>
+                    <div className="preview-grid">
+                      {previewUrls.map((url, idx) => {
+                        const file = newFiles[idx];
+                        const isVideo = file?.type.startsWith("video/");
+                        return (
+                          <div key={idx} className="preview-item">
+                            {isVideo ? (
+                              <video src={url} muted />
+                            ) : (
+                              <img src={url} alt={`preview-${idx}`} />
+                            )}
+                            <button
+                              type="button"
+                              className="preview-remove"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeNewFile(idx);
+                              }}
+                              aria-label="Remove"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <ul className="media-grid">
+                  {media.map((m) => (
+                    <li
+                      key={m._id}
+                      className={`media-item ${selectedMediaIds.includes(m._id) ? "selected" : ""
+                        }`}
+                      onClick={() => toggleSelectMedia(m._id)}
+                    >
+                      {m.type === "photo" ? (
+                        <img
+                          src={m.content.startsWith("http") ? m.content : `${API_BASE}${m.content}`}
+                          alt="memory"
+                        />
+                      ) : (
+                        <video
+                          controls
+                          src={m.content.startsWith("http") ? m.content : `${API_BASE}${m.content}`}
+                        />
+                      )}
+                    </li>
+                  ))}
+                </ul>
+
+                {selectedMediaIds.length === 0 ? (
+                  <></>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      selectedMediaIds.forEach((id) => handleDeleteMedia(id));
+                      setSelectedMediaIds([]);
+                    }}
+                    className="account-btn account-btn-danger delete-button"
+                    disabled={selectedMediaIds.length === 0}
+                  >
+                    Delete Selected
+                  </button>
+                )}
               </div>
-              <div className="playlist-input-row">
-                <label>
-                  YouTube playlist URL:
-                  <input
-                    type="text"
-                    placeholder="https://www.youtube.com/playlist?list=..."
-                    value={newYoutubePlaylistId}
-                    onChange={(e) => setNewYoutubePlaylistId(e.target.value)}
-                  />
-                </label>
-                <button
-                  type="button"
-                  className="account-btn account-btn-primary account-btn-sm"
-                  onClick={handleAddYoutubePlaylist}
-                  disabled={!newYoutubePlaylistId.trim()}
-                >
-                  {concertDetails?.youtubePlaylist ? "Update" : "Add"} YouTube
-                </button>
+
+              <div className="note-section">
+                <h2 className="section-title">Concert Note</h2>
+                <textarea
+                  rows={10}
+                  cols={50}
+                  value={editedNote}
+                  onChange={(e) => setEditedNote(e.target.value)}
+                />
               </div>
             </div>
-          </section>
-        </>
-      ) : media.length === 0 && !note?.content ? (
-        canEdit ? (
-          <button
-            type="button"
-            onClick={() => {
-              setEditMode(true);
-              setEditedNote(note?.content || "");
-              setNoteID(note?._id || "");
-            }}
-            className="account-btn account-btn-primary"
-          >
-            Add Experience
-          </button>
-        ) : null
-      ) : (
-        <>
-          {canEdit && (
+
+            <div className="save-button-wrapper">
+              <button
+                type="button"
+                onClick={handleSaveAll}
+                className="account-btn account-btn-primary save-button"
+                disabled={loading}
+              >
+                {loading ? "Saving..." : "Save"}
+              </button>
+            </div>
+
+            {/* Setlist - when editing */}
+            <section className="setlist-section">
+              <h3 className="add-playlist-title">Setlist</h3>
+              <div className="add-playlist-form">
+                <div className="playlist-input-row">
+                  <label>
+                    Spotify playlist URL:
+                    <input
+                      type="text"
+                      placeholder="https://open.spotify.com/playlist/..."
+                      value={newSpotifyPlaylistId}
+                      onChange={(e) => setNewSpotifyPlaylistId(e.target.value)}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    className="account-btn account-btn-primary account-btn-sm"
+                    onClick={handleAddSpotifyPlaylist}
+                    disabled={!newSpotifyPlaylistId.trim()}
+                  >
+                    {concertDetails?.setlist ? "Update" : "Add"} Spotify
+                  </button>
+                </div>
+                <div className="playlist-input-row">
+                  <label>
+                    YouTube playlist URL:
+                    <input
+                      type="text"
+                      placeholder="https://www.youtube.com/playlist?list=..."
+                      value={newYoutubePlaylistId}
+                      onChange={(e) => setNewYoutubePlaylistId(e.target.value)}
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    className="account-btn account-btn-primary account-btn-sm"
+                    onClick={handleAddYoutubePlaylist}
+                    disabled={!newYoutubePlaylistId.trim()}
+                  >
+                    {concertDetails?.youtubePlaylist ? "Update" : "Add"} YouTube
+                  </button>
+                </div>
+              </div>
+            </section>
+          </>
+        ) : media.length === 0 && !note?.content ? (
+          canEdit ? (
             <button
               type="button"
               onClick={() => {
@@ -529,59 +548,76 @@ const ConcertExpPage: React.FC = () => {
                 setEditedNote(note?.content || "");
                 setNoteID(note?._id || "");
               }}
-              className="account-btn account-btn-primary edit-button"
+              className="account-btn account-btn-primary"
             >
-              Edit
+              Add Experience
             </button>
-          )}
+          ) : null
+        ) : (
+          <>
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => {
+                  setEditMode(true);
+                  setEditedNote(note?.content || "");
+                  setNoteID(note?._id || "");
+                }}
+                className="account-btn account-btn-primary edit-button"
+              >
+                Edit
+              </button>
+            )}
 
-          <div className="flex-row">
-            <div className="media-section">
-              <h2 className="section-title">Media</h2>
-              <SimpleSlideshow media={media} />
-            </div>
-
-            <div className="note-section">
-              <h2 className="section-title">Concert Note</h2>
-              <pre className="note-display">
-                <Linkify>{note?.content || "No note yet."}</Linkify>
-              </pre>
-            </div>
-          </div>
-
-          {/* Setlist - when viewing */}
-          {(concertDetails?.setlist || concertDetails?.youtubePlaylist) && (
-            <section className="setlist-section">
-              <h3 className="add-playlist-title">Setlist</h3>
-              <div className="playlist-links">
-                {concertDetails?.setlist && (
-                  <a
-                    href={`https://open.spotify.com/playlist/${formatSpotifyId(concertDetails.setlist)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="spotify-playlist-link"
-                  >
-                    <ExternalLink size={18} />
-                    Open in Spotify
-                  </a>
-                )}
-                {concertDetails?.youtubePlaylist && (
-                  <a
-                    href={`https://www.youtube.com/playlist?list=${formatYoutubeId(concertDetails.youtubePlaylist)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="youtube-playlist-link"
-                  >
-                    <ExternalLink size={18} />
-                    Open YouTube playlist in new tab
-                  </a>
-                )}
+            <div className="flex-row">
+              <div className="media-section">
+                <h2 className="section-title">Media</h2>
+                <SimpleSlideshow media={media} />
               </div>
-            </section>
-          )}
-        </>
-      )}
-    </div>
+
+              <div className="note-section">
+                <h2 className="section-title">Concert Note</h2>
+                <pre className="note-display">
+                  <Linkify>{note?.content || "No note yet."}</Linkify>
+                </pre>
+              </div>
+            </div>
+
+            {/* Setlist - when viewing */}
+            {(concertDetails?.setlist || concertDetails?.youtubePlaylist) && (
+              <section className="setlist-section">
+                <h3 className="add-playlist-title">Setlist</h3>
+                <div className="playlist-links">
+                  {concertDetails?.setlist && (
+                    <a
+                      href={`https://open.spotify.com/playlist/${formatSpotifyId(concertDetails.setlist)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="spotify-playlist-link"
+                    >
+                      <ExternalLink size={18} />
+                      Open in Spotify
+                    </a>
+                  )}
+                  {concertDetails?.youtubePlaylist && (
+                    <a
+                      href={`https://www.youtube.com/playlist?list=${formatYoutubeId(concertDetails.youtubePlaylist)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="youtube-playlist-link"
+                    >
+                      <ExternalLink size={18} />
+                      Open YouTube playlist in new tab
+                    </a>
+                  )}
+                </div>
+              </section>
+            )}
+          </>
+        )}
+      </div>
+      <UploadProgressPopup state={uploadProgress} />
+    </>
   );
 };
 

@@ -12,4 +12,6 @@ const ConcertMemorySchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
+ConcertMemorySchema.index({ experience: 1 });
+
 module.exports = mongoose.model("ConcertMemory", ConcertMemorySchema);

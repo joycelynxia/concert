@@ -9,4 +9,7 @@ const ConcertExperienceSchema = new mongoose.Schema({
   // sharedWith: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] // Optional for future features
 }, { timestamps: true });
 
+ConcertExperienceSchema.index({ userId: 1 });
+ConcertExperienceSchema.index({ concertTicket: 1 });
+
 module.exports = mongoose.model('ConcertExperience', ConcertExperienceSchema);

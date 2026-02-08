@@ -192,7 +192,7 @@ router.get("/my_tickets", async (req, res) => {
     if (!userId) {
       return res.status(401).json({ message: "Login required" });
     }
-    const tickets = await ConcertTicket.find({ user: userId }).sort({ date: 1 });
+    const tickets = await ConcertTicket.find({ user: userId }).sort({ date: -1 });
     res.json(tickets);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -222,7 +222,7 @@ router.get("/share/:token", async (req, res) => {
     }
     const tickets = await ConcertTicket.find({
       _id: { $in: shareLink.ticketIds },
-    }).sort({ date: 1 });
+    }).sort({ date: -1 });
     res.json(tickets);
   } catch (error) {
     res.status(500).json({ error: error.message });
