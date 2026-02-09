@@ -6,6 +6,7 @@ import { API_BASE } from "../config/api";
 import "../styling/CalendarPage.css";
 import { format } from "date-fns";
 import { ConcertDetails } from "types/types";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
@@ -41,6 +42,9 @@ const CalendarPage: React.FC = () => {
   const isLoggedIn = Boolean(getCurrentUserId());
   const [concerts, setConcerts] = useState<ConcertDetails[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [expandedYears, setExpandedYears] = useState<Set<string>>(new Set());
+  const [expandedUpcoming, setExpandedUpcoming] = useState<boolean>(true);
+  const [expandedPast, setExpandedPast] = useState<boolean>(false);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -87,6 +91,36 @@ const CalendarPage: React.FC = () => {
     acc[dateKey].push(concert);
     return acc;
   }, {} as Record<string, ConcertDetails[]>);
+
+  const concertsByYear = useMemo(() => {
+    const byYear: Record<string, ConcertDetails[]> = {};
+    concerts.forEach((concert) => {
+      const year = new Date(concert.date).getFullYear().toString();
+      if (!byYear[year]) byYear[year] = [];
+      byYear[year].push(concert);
+    });
+    // Sort concerts within each year by date (newest first)
+    Object.keys(byYear).forEach((year) => {
+      byYear[year].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    });
+    return byYear;
+  }, [concerts]);
+
+  const sortedYears = useMemo(() => {
+    return Object.keys(concertsByYear).sort((a, b) => parseInt(b) - parseInt(a));
+  }, [concertsByYear]);
+
+  const toggleYear = (year: string) => {
+    setExpandedYears((prev) => {
+      const next = new Set(prev);
+      if (next.has(year)) {
+        next.delete(year);
+      } else {
+        next.add(year);
+      }
+      return next;
+    });
+  };
 
   const handleDateChange = (value: Value) => {
     if (value instanceof Date) {
@@ -182,27 +216,102 @@ const CalendarPage: React.FC = () => {
           ) : (
             <>
               <section className="concert-section">
-                <h3>Upcoming ({upcomingConcerts.length})</h3>
-                {upcomingConcerts.length === 0 ? (
-                  <p>No upcoming concerts.</p>
-                ) : (
-                  <ul>
-                    {upcomingConcerts.map((c) => (
-                      <ConcertListItem key={c._id} concert={c} />
-                    ))}
-                  </ul>
-                )}
+                <div className="concert-section-header">
+                  <button
+                    type="button"
+                    className="concert-section-toggle"
+                    onClick={() => setExpandedUpcoming(!expandedUpcoming)}
+                    aria-expanded={expandedUpcoming}
+                  >
+                    {expandedUpcoming ? (
+                      <ChevronDown size={18} className="timeline-icon" />
+                    ) : (
+                      <ChevronRight size={18} className="timeline-icon" />
+                    )}
+                    <span className="concert-section-title">
+                      Upcoming <span className="timeline-count">({upcomingConcerts.length})</span>
+                    </span>
+                  </button>
+                </div>
+                {expandedUpcoming && (
+                  upcomingConcerts.length > 0 ? (
+                    <ul>
+                      {upcomingConcerts.map((c) => (
+                        <ConcertListItem key={c._id} concert={c} />
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>No upcoming concerts.</p>
+                  ))
+                }
               </section>
               <section className="concert-section">
-                <h3>Past ({pastConcerts.length})</h3>
+                <div className="concert-section-header">
+                  <button
+                    type="button"
+                    className="concert-section-toggle"
+                    onClick={() => setExpandedPast(!expandedPast)}
+                    aria-expanded={expandedPast}
+                  >
+                    {expandedPast ? (
+                      <ChevronDown size={18} className="timeline-icon" />
+                    ) : (
+                      <ChevronRight size={18} className="timeline-icon" />
+                    )}
+                    <span className="concert-section-title">
+                      Past <span className="timeline-count">({pastConcerts.length})</span>
+                    </span>
+                  </button>
+                </div>
                 {pastConcerts.length === 0 ? (
                   <p>No past concerts.</p>
                 ) : (
-                  <ul>
-                    {pastConcerts.map((c) => (
-                      <ConcertListItem key={c._id} concert={c} />
-                    ))}
-                  </ul>
+                  expandedPast && (
+                    <ul>
+                      {pastConcerts.map((c) => (
+                        <ConcertListItem key={c._id} concert={c} />
+                      ))}
+                    </ul>
+                  )
+                )}
+              </section>
+              <section className="concert-section timeline-section">
+                <h3>Timeline</h3>
+                {sortedYears.length === 0 ? (
+                  <p>No concerts yet.</p>
+                ) : (
+                  <div className="timeline">
+                    {sortedYears.map((year) => {
+                      const yearConcerts = concertsByYear[year];
+                      const isExpanded = expandedYears.has(year);
+                      return (
+                        <div key={year} className="timeline-year">
+                          <button
+                            type="button"
+                            className="timeline-year-header"
+                            onClick={() => toggleYear(year)}
+                            aria-expanded={isExpanded}
+                          >
+                            {isExpanded ? (
+                              <ChevronDown size={18} className="timeline-icon" />
+                            ) : (
+                              <ChevronRight size={18} className="timeline-icon" />
+                            )}
+                            <span className="timeline-year-label">
+                              {year} <span className="timeline-count">({yearConcerts.length})</span>
+                            </span>
+                          </button>
+                          {isExpanded && (
+                            <ul className="timeline-concerts">
+                              {yearConcerts.map((c) => (
+                                <ConcertListItem key={c._id} concert={c} />
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
               </section>
             </>

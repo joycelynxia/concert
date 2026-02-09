@@ -8,6 +8,9 @@ import { LayoutGrid, List, Search, SlidersHorizontal, ChevronDown } from "lucide
 import { format } from "date-fns";
 import { API_BASE } from "../config/api";
 import "../styling/TicketsPage.css";
+import { getLocalTickets } from "db/localData";
+import { isGuestMode } from "utils/userUtils";
+import { LocalTicket } from "db/indexedDb";
 
 type SortOption = "date" | "artist";
 type ViewMode = "grid" | "table";
@@ -31,7 +34,7 @@ function TicketsPage() {
   const isLoggedIn = Boolean(currentUserId);
   const [isFormVisible, setIsFormVisible] = useState(false);
   // const [shareCopied, setShareCopied] = useState(false);
-  const [tickets, setTickets] = useState<ConcertDetails[]>([]);
+  const [tickets, setTickets] = useState<ConcertDetails[] | LocalTicket[]>([]);
   // const [error, setError] = useState(null);
   const [sortBy, setSortBy] = useState<SortOption>("date");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -133,6 +136,16 @@ function TicketsPage() {
       setTickets([]);
     }
   }, [isViewOnly, shareToken, isLoggedIn]);
+
+  useEffect(() => {
+    const fetchLocalTickets = async () => {
+    if (isGuestMode()) {
+        const tickets = await getLocalTickets();
+        setTickets(tickets);
+      }
+    };
+    fetchLocalTickets();
+  }, [isGuestMode()]);
 
   const handleDeleteTicket = async (ticketId: string) => {
     const confirm = window.confirm(
@@ -243,7 +256,6 @@ function TicketsPage() {
       <div className="header">
         <div className="header-title-row">
           <h1 className="page-title">my concerts</h1>
-          {isLoggedIn && !isViewOnly && (
             <button
               type="button"
               className="account-btn account-btn-primary add-ticket-button"
@@ -252,7 +264,6 @@ function TicketsPage() {
             >
               +
             </button>
-          )}
         </div>
         <div className="toolbar-row" ref={filterPanelRef}>
           <div className="search-wrapper">
@@ -383,47 +394,47 @@ function TicketsPage() {
           </div>
         </div>
         {(isFormVisible || editingTicketId) && (
+          <div
+            className="form-overlay"
+            onClick={() => {
+              setIsFormVisible(false);
+              setEditingTicketId(null);
+            }}
+          >
             <div
-              className="form-overlay"
-              onClick={() => {
-                setIsFormVisible(false);
-                setEditingTicketId(null);
-              }}
+              className="form-container"
+              onClick={(e) => e.stopPropagation()}
             >
-              <div
-                className="form-container"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <TicketForm
-                  onSave={(updated) => {
-                    handleSaveTicket(updated);
-                    setEditingTicketId(null);
-                  }}
-                  onCancel={() => {
-                    setIsFormVisible(false);
-                    setEditingTicketId(null);
-                  }}
-                  onDelete={(id) => {
-                    handleDeleteTicket(id);
-                    setEditingTicketId(null);
-                  }}
-                  isEditing={!!editingTicketId}
-                  initialData={
-                    editingTicketId
-                      ? tickets.find((t) => t._id === editingTicketId)
-                      : undefined
-                  }
-                  existingVenues={uniqueVenues}
-                  existingGenres={uniqueGenres}
-                />
-              </div>
+              <TicketForm
+                onSave={(updated) => {
+                  handleSaveTicket(updated);
+                  setEditingTicketId(null);
+                }}
+                onCancel={() => {
+                  setIsFormVisible(false);
+                  setEditingTicketId(null);
+                }}
+                onDelete={(id) => {
+                  handleDeleteTicket(id);
+                  setEditingTicketId(null);
+                }}
+                isEditing={!!editingTicketId}
+                initialData={
+                  editingTicketId
+                    ? tickets.find((t) => t._id === editingTicketId)
+                    : undefined
+                }
+                existingVenues={uniqueVenues}
+                existingGenres={uniqueGenres}
+              />
             </div>
+          </div>
         )}
       </div>
 
       <div className={`tickets-container ${viewMode === "table" ? "table-view" : ""}`}>
         {viewMode === "grid" ? (
-            <div className="ticket-list">
+          <div className="ticket-list">
             {paginatedTickets.map((ticket) => {
               const canEdit = isLoggedIn && (ticket.user != null && String(ticket.user) === String(currentUserId));
               return (

@@ -13,7 +13,8 @@ const upload = multer({
   dest: "uploads/",
   limits: { fileSize: 10000000 },
   fileFilter: (req, file, cb) => {
-    cb(null, ["image", "video"].includes(file.mimetype.split("/")[0]));
+    const allowed = ['video/mp4', 'video/quicktime', 'image/jpeg', 'image/png'];
+    cb(null, allowed.includes(file.mimetype));
   },
 });
 
@@ -87,7 +88,7 @@ router.post("/ticket", async (req, res) => {
       section,
       setlist: formatSpotifyPlaylist(setlist) || undefined,
       youtubePlaylist: formatYoutubePlaylist(youtubePlaylist) || undefined,
-      priceCents: priceCents * 100,
+      priceCents: priceCents,
       genre,
     });
 
@@ -153,7 +154,7 @@ router.put("/ticket/:id", async (req, res) => {
       ticket.youtubePlaylist,
       youtubePlaylist ? formatYoutubePlaylist(youtubePlaylist) : undefined
     );
-    ticket.priceCents = updateField(ticket.priceCents, priceCents * 100);
+    ticket.priceCents = updateField(ticket.priceCents, priceCents);
     ticket.genre = updateField(ticket.genre, genre);
 
     const updatedTicket = await ticket.save();

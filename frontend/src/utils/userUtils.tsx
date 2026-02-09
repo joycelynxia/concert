@@ -8,3 +8,7 @@ export function getCurrentUserId(): string | null {
     return null;
   }
 }
+
+export function isGuestMode(): boolean {
+  return !getCurrentUserId();
+}

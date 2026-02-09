@@ -31,11 +31,13 @@ const SimpleSlideshow: React.FC<SlideshowProps> = ({ media }) => {
             src={src}
             alt="Concert"
             className="slideshow-media"
+            loading="lazy"
           />
         ) : (
           <video
             src={src}
             controls
+            preload="metadata"
             className="slideshow-media"
           />
         )}

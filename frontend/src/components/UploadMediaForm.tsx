@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import { API_BASE } from '../config/api';
+import { isAllowedUploadFile, UPLOAD_ACCEPT } from '../utils/uploadAllowed';
 
 const ConcertMemoryUploader: React.FC = () => {
   const { experienceId } = useParams(); // Get experience ID from route
@@ -10,7 +11,7 @@ const ConcertMemoryUploader: React.FC = () => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setFiles(Array.from(e.target.files));
+      setFiles(Array.from(e.target.files).filter(isAllowedUploadFile));
     }
   };
 
@@ -60,7 +61,7 @@ const ConcertMemoryUploader: React.FC = () => {
       <h2>Upload Concert Memories</h2>
 
       <div>
-        <input type="file" accept="image/*,video/*" multiple onChange={handleFileChange} />
+        <input type="file" accept={UPLOAD_ACCEPT} multiple onChange={handleFileChange} />
         <div>
           {files.map((file, idx) => (
             <p key={idx}>{file.name}</p>

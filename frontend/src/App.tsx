@@ -11,21 +11,25 @@ const App: React.FC = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<AuthPage />} />
-        <Route
-          path="/*"
-          element={
-            <MainLayout>
-              <Routes>
-                <Route path="/tickets" element={<TicketsPage />} />
-                <Route path="/tickets/share/:token" element={<TicketsPage />} />
-                <Route path="/calendar" element={<CalendarPage />} />
-                <Route path="/account" element={<AccountPage />} />
-                <Route path="/concert/:id" element={<ConcertExpPage />} />
-              </Routes>
-            </MainLayout>
-          }
-        />
+        if (isLoggedIn || !isOnline()) {
+          <Route
+            path="/*"
+            element={
+              <MainLayout>
+                <Routes>
+                  <Route path="/tickets" element={<TicketsPage />} />
+                  <Route path="/tickets/share/:token" element={<TicketsPage />} />
+                  <Route path="/calendar" element={<CalendarPage />} />
+                  <Route path="/account" element={<AccountPage />} />
+                  <Route path="/concert/:id" element={<ConcertExpPage />} />
+                </Routes>
+              </MainLayout>
+            }
+          />
+        } else {
+          <Route path="/" element={<AuthPage />} />
+        }
+
       </Routes>
     </Router>
   );

@@ -19,6 +19,9 @@ function AuthPage() {
     if (localStorage.getItem("token")) {
       navigate("/tickets", { replace: true });
     }
+    if (!navigator.onLine) {
+      navigate("/tickets", { replace: true });
+    }
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -185,7 +188,7 @@ function AuthPage() {
         </form>
 
         <p className="auth-footer">
-          {mode === "login" ? (
+          {/* {mode === "login" ? (
             <>
               Don't have an account?{" "}
               <button type="button" className="auth-link" onClick={toggleMode}>
@@ -199,7 +202,8 @@ function AuthPage() {
                 Log in
               </button>
             </>
-          )}
+          )} */}
+          <button type="button" className="auth-link" onClick={() => navigate("/tickets")}>Continue as guest</button>
         </p>
       </div>
     </div>

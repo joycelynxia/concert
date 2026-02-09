@@ -60,8 +60,8 @@ const upload = multer({
     fileSize: 500 * 1024 * 1024 // 500MB per file
   },
   fileFilter: (req, file, cb) => {
-    const isMedia = ['image', 'video'].includes(file.mimetype.split('/')[0]);
-    cb(null, isMedia);
+    const allowed = ['video/mp4', 'video/quicktime', 'image/jpeg', 'image/png'];
+    cb(null, allowed.includes(file.mimetype));
   }
 });
 
@@ -76,6 +76,10 @@ router.post('/presign', async (req, res) => {
     const { ticketId, filename, contentType } = req.body;
     if (!ticketId || !filename || !contentType) {
       return res.status(400).json({ error: 'ticketId, filename, contentType required' });
+    }
+    const allowed = ['video/mp4', 'video/quicktime', 'image/jpeg', 'image/png'];
+    if (!allowed.includes(contentType)) {
+      return res.status(400).json({ error: 'Content type not allowed' });
     }
     const ticket = await ConcertTicket.findById(ticketId);
     if (!ticket) return res.status(404).json({ error: 'Ticket not found' });

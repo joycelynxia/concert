@@ -14,8 +14,10 @@
     "cors": "^2.8.5",
     "css-loader": "^7.1.2",
     "date-fns": "^4.1.0",
+    "dexie": "^4.0.10",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "heic2any": "^0.0.4",
     "install": "^0.13.0",
     "jsbarcode": "^3.11.6",
     "linkifyjs": "^4.3.2",
@@ -36,9 +38,9 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "start:127": "HOST=127.0.0.1 react-scripts start",
-    "build": "react-scripts build",
+    "start": "craco start",
+    "start:127": "HOST=127.0.0.1 craco start",
+    "build": "craco build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -65,6 +67,8 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@craco/craco": "^7.1.0",
+    "craco-workbox": "^0.2.0",
     "@types/react": "^19.1.4",
     "@types/react-dom": "^19.1.4",
     "@types/react-linkify": "^1.0.4",

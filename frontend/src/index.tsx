@@ -13,6 +13,24 @@ root.render(
   </React.StrictMode>
 );
 
+if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/service-worker.js')
+      .then((reg) => console.log('SW registered', reg.scope))
+      .catch((err) => console.error('SW registration failed', err));
+  });
+}
+
+window.addEventListener('online', () => {
+  // syncDirtyTickets();
+});
+
+window.addEventListener('offline', () => {
+  // switch to indexDb mode
+  // localStorage.setItem("mode", "indexDb");
+});
+
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals

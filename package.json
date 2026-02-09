@@ -1,1 +1,6 @@
-{}
+{
+  "dependencies": {
+    "@craco/craco": "^7.1.0",
+    "craco-workbox": "^0.2.0"
+  }
+}

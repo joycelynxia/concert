@@ -14,9 +14,9 @@ const MediaMemory: React.FC<MediaMemoryProps> = ({ memory, onDelete}) => {
     return (
         <div className='mb-4'>
             {memory.type === 'photo' ? (
-                <img src={src} alt="Concert memory" width="200" />
+                <img src={src} alt="Concert memory" width="200" loading="lazy" />
             ) : (
-                <video controls width="300">
+                <video controls width="300" preload="metadata">
                     <source src={src} type={memory.mimeType || 'video/mp4'} />
                     Your browser does not support the video tag.
                 </video>

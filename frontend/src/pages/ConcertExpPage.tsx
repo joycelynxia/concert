@@ -5,6 +5,7 @@ import SimpleSlideshow from "../components/MediaSlideshow";
 import UploadProgressPopup, { UploadProgressState } from "../components/UploadProgressPopup";
 import { API_BASE } from "../config/api";
 import "../styling/ConcertExp.css";
+import { isAllowedUploadFile, UPLOAD_ACCEPT } from "../utils/uploadAllowed";
 import Linkify from "react-linkify";
 import { ExternalLink, ImagePlus, Upload, X } from "lucide-react";
 
@@ -88,13 +89,14 @@ const ConcertExpPage: React.FC = () => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files ? Array.from(e.target.files) : [];
+    const files = e.target.files ? Array.from(e.target.files).filter(isAllowedUploadFile) : [];
+    e.target.value = "";
+    if (files.length === 0) return;
     setNewFiles((prev) => [...prev, ...files]);
     setPreviewUrls((prev) => [
       ...prev,
       ...files.map((file) => URL.createObjectURL(file)),
     ]);
-    e.target.value = "";
   };
 
   const removeNewFile = (idx: number) => {
@@ -105,9 +107,7 @@ const ConcertExpPage: React.FC = () => {
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    const files = Array.from(e.dataTransfer.files).filter(
-      (f) => f.type.startsWith("image/") || f.type.startsWith("video/")
-    );
+    const files = Array.from(e.dataTransfer.files).filter(isAllowedUploadFile);
     if (files.length) {
       setNewFiles((prev) => [...prev, ...files]);
       setPreviewUrls((prev) => [
@@ -381,7 +381,7 @@ const ConcertExpPage: React.FC = () => {
                   ref={fileInputRef}
                   type="file"
                   multiple
-                  accept="image/*,video/*"
+                  accept={UPLOAD_ACCEPT}
                   onChange={handleFileChange}
                   className="upload-input-hidden"
                 />
