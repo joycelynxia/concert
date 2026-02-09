@@ -85,12 +85,12 @@ function AuthPage() {
     }
   };
 
-  const toggleMode = () => {
-    setMode(mode === "login" ? "signup" : "login");
-    setError("");
-    setPassword("");
-    setConfirmPassword("");
-  };
+  // const toggleMode = () => {
+  //   setMode(mode === "login" ? "signup" : "login");
+  //   setError("");
+  //   setPassword("");
+  //   setConfirmPassword("");
+  // };
 
   return (
     <div className="auth-page">

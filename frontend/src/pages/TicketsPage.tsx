@@ -108,6 +108,8 @@ function TicketsPage() {
     setCurrentPage(1);
   }, [searchQuery, filterVenue, filterGenre, sortBy]);
 
+  const guestMode = !isLoggedIn && !isViewOnly;
+
   useEffect(() => {
     if (isViewOnly && shareToken) {
       fetch(`${API_BASE}/api/concerts/share/${shareToken}`)
@@ -132,20 +134,16 @@ function TicketsPage() {
           console.log("error: failed to fetch my tickets", error);
           setTickets([]);
         });
+    } else if (guestMode) {
+      const fetchLocalTickets = async () => {
+        const tickets = await getLocalTickets();
+        setTickets(tickets);
+      };
+      fetchLocalTickets();
     } else {
       setTickets([]);
     }
-  }, [isViewOnly, shareToken, isLoggedIn]);
-
-  useEffect(() => {
-    const fetchLocalTickets = async () => {
-    if (isGuestMode()) {
-        const tickets = await getLocalTickets();
-        setTickets(tickets);
-      }
-    };
-    fetchLocalTickets();
-  }, [isGuestMode()]);
+  }, [isViewOnly, shareToken, isLoggedIn, guestMode]);
 
   const handleDeleteTicket = async (ticketId: string) => {
     const confirm = window.confirm(
