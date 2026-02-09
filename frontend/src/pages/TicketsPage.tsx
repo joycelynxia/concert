@@ -9,7 +9,7 @@ import { format } from "date-fns";
 import { API_BASE } from "../config/api";
 import "../styling/TicketsPage.css";
 import { getLocalTickets } from "db/localData";
-import { isGuestMode } from "utils/userUtils";
+// import { isGuestMode } from "utils/userUtils";
 import { LocalTicket } from "db/indexedDb";
 
 type SortOption = "date" | "artist";
