@@ -11,6 +11,7 @@ interface TicketFormProps {
   initialData?: ConcertDetails;
   existingVenues?: string[];
   existingGenres?: string[];
+  guestMode?: boolean;
 }
 
 const TicketForm: React.FC<TicketFormProps> = ({
@@ -21,6 +22,7 @@ const TicketForm: React.FC<TicketFormProps> = ({
   initialData,
   existingVenues = [],
   existingGenres = [],
+  guestMode = false,
 }) => {
   const [submitError, setSubmitError] = useState("");
   const [concertDetails, setConcertDetails] = useState<ConcertDetails>({
@@ -53,6 +55,11 @@ const TicketForm: React.FC<TicketFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError("");
+
+    if (guestMode) {
+      onSave(concertDetails as ConcertDetails);
+      return;
+    }
 
     try {
       const url = isEditing

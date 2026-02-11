@@ -8,8 +8,13 @@ import { LayoutGrid, List, Search, SlidersHorizontal, ChevronDown } from "lucide
 import { format } from "date-fns";
 import { API_BASE } from "../config/api";
 import "../styling/TicketsPage.css";
-import { getLocalTickets } from "db/localData";
-// import { isGuestMode } from "utils/userUtils";
+import {
+  getLocalTickets,
+  addLocalTicket,
+  addLocalExperience,
+  updateLocalTicket,
+  deleteLocalTicket,
+} from "db/localData";
 import { LocalTicket } from "db/indexedDb";
 
 type SortOption = "date" | "artist";
@@ -150,58 +155,83 @@ function TicketsPage() {
       "Are you sure you want to delete the selected concert?"
     );
 
-    if (confirm) {
+    if (!confirm) return;
+
+    if (guestMode) {
       try {
-        const headers: Record<string, string> = {};
-        const token = localStorage.getItem("token");
-        if (token) headers.Authorization = `Bearer ${token}`;
-        const res = await fetch(
-          `${API_BASE}/api/concerts/ticket/${ticketId}`,
-          {
-            method: "DELETE",
-            headers: Object.keys(headers).length ? headers : undefined,
-          }
-        );
-        if (res.ok) {
-          setTickets((prev) =>
-            prev.filter((ticket) => ticket._id !== ticketId)
-          );
-        } else {
-          console.error(`Failed to delete ticket with id ${ticketId}`);
-        }
+        await deleteLocalTicket(ticketId);
+        const updated = await getLocalTickets();
+        setTickets(updated);
       } catch (err) {
-        console.error("Network error during deletion:", err);
+        console.error("Failed to delete local ticket:", err);
       }
+      return;
     }
 
-    // try {
-    //   const refreshed = await fetch(
-    //     "http://127.0.0.1:4000/api/concerts/all_tickets"
-    //   );
-    //   const updatedTickets = await refreshed.json();
-    //   setTickets(Array.isArray(updatedTickets) ? updatedTickets : []);
-    // } catch (err) {
-    //   console.error("Failed to refresh tickets list after deletion", err);
-    // }
-    // }
+    try {
+      const headers: Record<string, string> = {};
+      const token = localStorage.getItem("token");
+      if (token) headers.Authorization = `Bearer ${token}`;
+      const res = await fetch(
+        `${API_BASE}/api/concerts/ticket/${ticketId}`,
+        {
+          method: "DELETE",
+          headers: Object.keys(headers).length ? headers : undefined,
+        }
+      );
+      if (res.ok) {
+        setTickets((prev) =>
+          prev.filter((ticket) => ticket._id !== ticketId)
+        );
+      } else {
+        console.error(`Failed to delete ticket with id ${ticketId}`);
+      }
+    } catch (err) {
+      console.error("Network error during deletion:", err);
+    }
   };
 
-  const handleSaveTicket = (updatedConcert: ConcertDetails) => {
-    console.log('in tickets page')
+  const handleSaveTicket = async (updatedConcert: ConcertDetails | LocalTicket) => {
     setIsFormVisible(false);
-    console.log(updatedConcert)
+
+    if (guestMode) {
+      try {
+        const payload = {
+          artist: updatedConcert.artist,
+          tour: updatedConcert.tour,
+          date: updatedConcert.date,
+          venue: updatedConcert.venue,
+          seatInfo: updatedConcert.seatInfo,
+          section: updatedConcert.section,
+          setlist: updatedConcert.setlist,
+          youtubePlaylist: updatedConcert.youtubePlaylist,
+          genre: updatedConcert.genre,
+          priceCents: updatedConcert.priceCents,
+        };
+        if (editingTicketId) {
+          await updateLocalTicket(updatedConcert._id, payload);
+        } else {
+          const ticket = await addLocalTicket(payload);
+          await addLocalExperience({ concertTicket: ticket._id });
+        }
+        const updated = await getLocalTickets();
+        setTickets(updated);
+        setEditingTicketId(null);
+      } catch (err) {
+        console.error("Failed to save local ticket:", err);
+      }
+      return;
+    }
 
     setTickets((prevTickets) => {
-      if (!prevTickets) return [updatedConcert];
-
+      if (!prevTickets) return [updatedConcert as ConcertDetails];
       const exists = prevTickets.some((t) => t._id === updatedConcert._id);
       if (exists) {
         return prevTickets.map((t) =>
-          t._id === updatedConcert._id ? updatedConcert : t
+          t._id === updatedConcert._id ? (updatedConcert as ConcertDetails) : t
         );
-      } else {
-        return [...prevTickets, updatedConcert];
       }
+      return [...prevTickets, updatedConcert as ConcertDetails];
     });
   };
 
@@ -254,6 +284,7 @@ function TicketsPage() {
       <div className="header">
         <div className="header-title-row">
           <h1 className="page-title">my concerts</h1>
+            {!isViewOnly && (
             <button
               type="button"
               className="account-btn account-btn-primary add-ticket-button"
@@ -262,6 +293,7 @@ function TicketsPage() {
             >
               +
             </button>
+            )}
         </div>
         <div className="toolbar-row" ref={filterPanelRef}>
           <div className="search-wrapper">
@@ -404,6 +436,7 @@ function TicketsPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <TicketForm
+                guestMode={guestMode}
                 onSave={(updated) => {
                   handleSaveTicket(updated);
                   setEditingTicketId(null);
@@ -419,7 +452,7 @@ function TicketsPage() {
                 isEditing={!!editingTicketId}
                 initialData={
                   editingTicketId
-                    ? tickets.find((t) => t._id === editingTicketId)
+                    ? (tickets.find((t) => t._id === editingTicketId) as ConcertDetails | undefined)
                     : undefined
                 }
                 existingVenues={uniqueVenues}
@@ -434,7 +467,7 @@ function TicketsPage() {
         {viewMode === "grid" ? (
           <div className="ticket-list">
             {paginatedTickets.map((ticket) => {
-              const canEdit = isLoggedIn && (ticket.user != null && String(ticket.user) === String(currentUserId));
+              const canEdit = guestMode || (isLoggedIn && (ticket.user != null && String(ticket.user) === String(currentUserId)));
               return (
                 <div key={ticket._id}>
                   <ConcertTicket
@@ -480,7 +513,7 @@ function TicketsPage() {
                     <td>{ticket.seatInfo || "—"}</td>
                     <td className="table-actions" onClick={(e) => e.stopPropagation()}>
                       {!isViewOnly && (() => {
-                        const canEdit = isLoggedIn && (ticket.user != null && String(ticket.user) === String(currentUserId));
+                        const canEdit = guestMode || (isLoggedIn && (ticket.user != null && String(ticket.user) === String(currentUserId)));
                         return canEdit ? (
                           <>
                             <button

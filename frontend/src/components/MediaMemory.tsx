@@ -9,7 +9,9 @@ interface MediaMemoryProps {
 }
 
 const MediaMemory: React.FC<MediaMemoryProps> = ({ memory, onDelete}) => {
-    const src = memory.content.startsWith('http') ? memory.content : `${API_BASE}${memory.content}`;
+    const src = memory.content.startsWith('http') || memory.content.startsWith('data:')
+        ? memory.content
+        : `${API_BASE}${memory.content}`;
 
     return (
         <div className='mb-4'>

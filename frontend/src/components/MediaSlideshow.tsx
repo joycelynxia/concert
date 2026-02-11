@@ -19,7 +19,9 @@ const SimpleSlideshow: React.FC<SlideshowProps> = ({ media }) => {
   if (total === 0) return <p>No media available.</p>;
 
   const currentItem = mediaItems[current];
-  const src = currentItem.content.startsWith('http') ? currentItem.content : `${API_BASE}${currentItem.content}`;
+  const src = currentItem.content.startsWith('http') || currentItem.content.startsWith('data:')
+    ? currentItem.content
+    : `${API_BASE}${currentItem.content}`;
 
   return (
     <div className="slideshow-container">

@@ -8,6 +8,16 @@ import "../styling/ConcertExp.css";
 import { isAllowedUploadFile, UPLOAD_ACCEPT } from "../utils/uploadAllowed";
 import Linkify from "react-linkify";
 import { ExternalLink, ImagePlus, Upload, X } from "lucide-react";
+import {
+  getLocalTicket,
+  getLocalExperiencesByTicket,
+  getLocalMemoriesByExperience,
+  addLocalExperience,
+  addLocalMemory,
+  updateLocalMemory,
+  deleteLocalMemory,
+  updateLocalTicket,
+} from "../db/localData";
 
 function getCurrentUserId(): string | null {
   try {
@@ -36,10 +46,14 @@ const ConcertExpPage: React.FC = () => {
   const { id } = useParams();
   const currentUserId = getCurrentUserId();
   const isLoggedIn = Boolean(currentUserId);
+  const guestMode = !isLoggedIn;
   const [memories, setMemories] = useState<ConcertMemory[]>([]);
   const [concertDetails, setConcertDetails] = useState<ConcertDetails>();
+  const [localExpId, setLocalExpId] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
   const canEdit = Boolean(
+    guestMode && concertDetails
+  ) || Boolean(
     isLoggedIn &&
     concertDetails?.user != null &&
     String(concertDetails.user) === String(currentUserId)
@@ -61,22 +75,50 @@ const ConcertExpPage: React.FC = () => {
   useEffect(() => {
     if (!id) return;
 
-    fetch(`${API_BASE}/api/upload/get/${id}`)
-      .then((res) => res.json())
-      .then((data) =>
-        Array.isArray(data) ? setMemories(data) : setMemories([])
-      )
-      .catch(() => setMemories([]));
+    const loadFromLocal = async () => {
+      const ticket = await getLocalTicket(id);
+      if (!ticket) return false;
+      setConcertDetails(ticket as ConcertDetails);
+      setNewSpotifyPlaylistId(ticket.setlist || "");
+      setNewYoutubePlaylistId(ticket.youtubePlaylist || "");
+      const exps = await getLocalExperiencesByTicket(id);
+      const exp = exps[0];
+      if (!exp) {
+        setMemories([]);
+        setLocalExpId(null);
+        return true;
+      }
+      setLocalExpId(exp._id);
+      const mems = await getLocalMemoriesByExperience(exp._id);
+      setMemories(mems.map((m) => ({ _id: m._id, type: m.type, content: m.content, mimeType: m.mimeType })));
+      return true;
+    };
 
-    fetch(`${API_BASE}/api/concerts/ticket/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setConcertDetails(data);
-        setNewSpotifyPlaylistId(data?.setlist || "");
-        setNewYoutubePlaylistId(data?.youtubePlaylist || "");
-      })
-      .catch(() => null);
-  }, [id]);
+    const loadFromApi = async () => {
+      const [memRes, ticketRes] = await Promise.all([
+        fetch(`${API_BASE}/api/upload/get/${id}`),
+        fetch(`${API_BASE}/api/concerts/ticket/${id}`),
+      ]);
+      const memData = memRes.ok ? await memRes.json() : [];
+      const ticketData = ticketRes.ok ? await ticketRes.json() : null;
+      setMemories(Array.isArray(memData) ? memData : []);
+      if (ticketData) {
+        setConcertDetails(ticketData);
+        setNewSpotifyPlaylistId(ticketData.setlist || "");
+        setNewYoutubePlaylistId(ticketData.youtubePlaylist || "");
+      }
+      setLocalExpId(null);
+    };
+
+    (async () => {
+      if (guestMode) {
+        const loaded = await loadFromLocal();
+        if (!loaded) await loadFromApi();
+      } else {
+        await loadFromApi();
+      }
+    })();
+  }, [id, guestMode]);
 
   useEffect(() => {
     const note = memories.find((m) => m.type === "note");
@@ -125,10 +167,6 @@ const ConcertExpPage: React.FC = () => {
     const totalFiles = newFiles.length;
     const showProgress = totalFiles > 0;
 
-    const authHeaders: Record<string, string> = {};
-    const token = localStorage.getItem("token");
-    if (token) authHeaders.Authorization = `Bearer ${token}`;
-
     const updateProgress = (current: number, fileName?: string) => {
       if (showProgress) {
         setUploadProgress({
@@ -149,6 +187,59 @@ const ConcertExpPage: React.FC = () => {
         }, 1500);
       }
     };
+
+    if (guestMode && concertDetails) {
+      try {
+        setEditMode(false);
+        let expId = localExpId;
+        if (!expId) {
+          const exp = await addLocalExperience({ concertTicket: id });
+          expId = exp._id;
+          setLocalExpId(expId);
+        }
+        if (noteID && editedNote.trim()) {
+          await updateLocalMemory(noteID, { content: editedNote });
+        } else if (!noteID && editedNote.trim()) {
+          await addLocalMemory({ experience: expId, type: "note", content: editedNote });
+        }
+        for (let i = 0; i < newFiles.length; i++) {
+          const file = newFiles[i];
+          updateProgress(i + 1, file?.name);
+          const dataUrl = await new Promise<string>((res, rej) => {
+            const r = new FileReader();
+            r.onload = () => res(r.result as string);
+            r.onerror = rej;
+            r.readAsDataURL(file);
+          });
+          const type = file.type.startsWith("video/") ? "video" : "photo";
+          await addLocalMemory({
+            experience: expId,
+            type,
+            content: dataUrl,
+            mimeType: file.type,
+          });
+        }
+        previewUrls.forEach((url) => URL.revokeObjectURL(url));
+        setNewFiles([]);
+        setPreviewUrls([]);
+        const exps = await getLocalExperiencesByTicket(id);
+        const exp = exps[0];
+        if (exp) {
+          const mems = await getLocalMemoriesByExperience(exp._id);
+          setMemories(mems.map((m) => ({ _id: m._id, type: m.type, content: m.content, mimeType: m.mimeType })));
+        }
+        showCompleteAndClose();
+      } catch (err: unknown) {
+        alert("Error saving: " + (err instanceof Error ? err.message : "Unknown error"));
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    const authHeaders: Record<string, string> = {};
+    const token = localStorage.getItem("token");
+    if (token) authHeaders.Authorization = `Bearer ${token}`;
 
     // update note
     if (noteID) {
@@ -259,7 +350,7 @@ const ConcertExpPage: React.FC = () => {
       showCompleteAndClose();
 
       const refreshed = await fetch(`${API_BASE}/api/upload/get/${id}`);
-      const updatedMemories = await refreshed.json();
+      const updatedMemories = refreshed.ok ? await refreshed.json() : [];
       setMemories(Array.isArray(updatedMemories) ? updatedMemories : []);
     } catch (err: unknown) {
       alert("Error saving experience: " + (err instanceof Error ? err.message : "Unknown error"));
@@ -270,6 +361,16 @@ const ConcertExpPage: React.FC = () => {
 
   const handleDeleteMedia = async (mediaId: string) => {
     if (!id || !mediaId) return;
+
+    if (guestMode) {
+      try {
+        await deleteLocalMemory(mediaId);
+        setMemories((prev) => prev.filter((m) => m._id !== mediaId));
+      } catch (err) {
+        alert("Error deleting media");
+      }
+      return;
+    }
 
     try {
       const headers: Record<string, string> = {};
@@ -299,6 +400,17 @@ const ConcertExpPage: React.FC = () => {
 
   const handleAddSpotifyPlaylist = async () => {
     if (!id || !newSpotifyPlaylistId) return;
+    if (guestMode && concertDetails) {
+      try {
+        await updateLocalTicket(id, { setlist: newSpotifyPlaylistId });
+        setConcertDetails((prev) =>
+          prev ? { ...prev, setlist: newSpotifyPlaylistId } : prev
+        );
+      } catch (err) {
+        alert("Error saving Spotify playlist");
+      }
+      return;
+    }
     try {
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       const token = localStorage.getItem("token");
@@ -325,6 +437,17 @@ const ConcertExpPage: React.FC = () => {
 
   const handleAddYoutubePlaylist = async () => {
     if (!id || !newYoutubePlaylistId) return;
+    if (guestMode && concertDetails) {
+      try {
+        await updateLocalTicket(id, { youtubePlaylist: newYoutubePlaylistId });
+        setConcertDetails((prev) =>
+          prev ? { ...prev, youtubePlaylist: newYoutubePlaylistId } : prev
+        );
+      } catch (err) {
+        alert("Error saving YouTube playlist");
+      }
+      return;
+    }
     try {
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       const token = localStorage.getItem("token");
@@ -442,13 +565,13 @@ const ConcertExpPage: React.FC = () => {
                     >
                       {m.type === "photo" ? (
                         <img
-                          src={m.content.startsWith("http") ? m.content : `${API_BASE}${m.content}`}
+                          src={m.content.startsWith("http") || m.content.startsWith("data:") ? m.content : `${API_BASE}${m.content}`}
                           alt="memory"
                         />
                       ) : (
                         <video
                           controls
-                          src={m.content.startsWith("http") ? m.content : `${API_BASE}${m.content}`}
+                          src={m.content.startsWith("http") || m.content.startsWith("data:") ? m.content : `${API_BASE}${m.content}`}
                         />
                       )}
                     </li>

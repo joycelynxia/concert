@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE } from "../config/api";
+import { syncLocalTicketsToServer } from "../db/syncOnLogin";
 import "../styling/AuthPage.css";
 
 type AuthMode = "login" | "signup";
@@ -67,6 +68,14 @@ function AuthPage() {
         localStorage.setItem("token", data.token!);
         if (data.user) {
           localStorage.setItem("user", JSON.stringify(data.user));
+        }
+        try {
+          const { synced } = await syncLocalTicketsToServer(data.token!);
+          if (synced > 0) {
+            console.log(`Synced ${synced} guest entries to your account.`);
+          }
+        } catch {
+          // Sync failure is non-fatal
         }
         navigate("/tickets");
       } else {
